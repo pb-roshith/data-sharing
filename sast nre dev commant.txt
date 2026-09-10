@@ -1,0 +1,7 @@
+1. Added `autoComplete="off"` to password fields to prevent browser autofill and storage.
+
+2. Changed password-field autocomplete to `off` to prevent sensitive credentials from being automatically filled or stored.
+
+3.Added autoComplete="off" to the profile password inputs to prevent browser autofill and local storage of sensitive credentials.
+
+4.Added autoComplete="off" to the shared password input, covering current, new, and confirmation password fields and preventing browser autofill on shared devices.
