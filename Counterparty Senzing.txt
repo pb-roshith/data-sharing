@@ -1,0 +1,348 @@
+﻿Connected Counterparty
+Senzing and Neo4j
+
+
+For your Connected Counterparty Risk Platform, Senzing fits mainly at the data-ingestion/entity-resolution layer, before Neo4j builds the relationship graph.Neo4j is our relationship and graph database. It tells us how counterparties are connected. Senzing solves a different problem — entity resolution. It identifies when records from CRM, KYC, trading, watchlists, etc. actually refer to the same real-world counterparty. We can use Senzing first to create trusted/canonical entities and then use Neo4j to build the connected counterparty risk graph. 
+
+
+1. What problem does Senzing solve?
+Suppose your systems contain:
+System A:
+"Alpha Urban Holdings Inc"
+Address: 10 Park Street
+Country: US
+
+
+System B:
+"Alpha Urban Holdings"
+Address: 10 Park St.
+Country: USA
+
+
+System C:
+"Alpha Urban Hldgs Inc."
+Address: 10 Park Street
+Country: US
+
+
+A normal database may treat these as three different companies.
+Senzing analyzes attributes such as names, addresses, identifiers and other features and determines that these records likely represent the same real-world entity. Senzing's entity specification is specifically designed to map source records into its resolution engine
+So,
+3 source records
+       ↓
+     Senzing
+       ↓
+Real-world Entity
+"Alpha Urban Holdings Inc"
+       ↓
+      Neo4j
+       ↓
+Relationship / Risk Graph
+
+
+2. Where would we use the Senzing API in your application?
+I'd put it between your source systems and Neo4j.
+                 SOURCE SYSTEMS
+        ┌──────────┬──────────┬──────────┐
+        ↓          ↓          ↓
+     CRM       Trading      KYC/AML
+        ↓          ↓          ↓
+        └──────────┬──────────┘
+                   ↓
+          Data Transformation
+                   ↓
+              SENZING API
+                   ↓
+        Entity Resolution
+                   ↓
+      ┌────────────┴────────────┐
+      ↓                         ↓
+ Canonical Entity          Match Evidence
+      ↓                         ↓
+      └────────────┬────────────┘
+                   ↓
+                 NEO4J
+                   ↓
+          Relationship Graph
+                   ↓
+       Risk Calculation / UI
+3. Example using your Alpha Urban Holdings (Counterparties Tab)
+Your application currently shows:
+CP-00001 — Alpha Urban Holdings Inc
+Imagine the bank has these records:
+{
+  "DATA_SOURCE": "CRM",
+  "RECORD_ID": "CRM-1001",
+  "NAME_ORG": "Alpha Urban Holdings Inc",
+  "ADDR_LINE1": "10 Park Street",
+  "COUNTRY": "US"
+}
+Another System:
+{
+  "DATA_SOURCE": "TRADING",
+  "RECORD_ID": "TRD-7832",
+  "NAME_ORG": "Alpha Urban Hldgs",
+  "ADDR_LINE1": "10 Park St",
+  "COUNTRY": "USA"
+}
+ANd KYC:
+{
+  "DATA_SOURCE": "KYC",
+  "RECORD_ID": "KYC-4451",
+  "NAME_ORG": "Alpha Urban Holdings, Inc.",
+  "ADDR_LINE1": "10 Park Street",
+  "COUNTRY": "United States"
+}
+Send these records through Senzing.
+Senzing can resolve them to the same underlying entity.
+Conceptually:
+CRM-1001 ─────┐
+              │
+TRD-7832 ─────┼──→ Senzing Entity 12345
+              │
+KYC-4451 ─────┘
+"Why were these records resolved to the same entity?"
+For example:
+Name similarity       Strong
+Address match         Strong
+Registration ID       Exact
+Country               Match
+Senzing provides entity retrieval and relationship information, and its output can include the records composing an entity and related entities.
+4. Relationship Graph — this is where Senzing + Neo4j become powerful
+Alpha Urban Holdings
+       │
+       ├── Delta Real Estate
+       ├── Prime Healthcare
+       ├── Keystone Trading
+       ├── Riviera Real Estate
+       └── ...
+But before Neo4j creates this graph, we need to know:
+Are Alpha, Delta, Prime, etc. actually unique entities?
+That's where Senzing comes first.
+Pipeline
+Raw Records
+     ↓
+Senzing
+     ↓
+Resolved Entities
+     ↓
+Neo4j
+     ↓
+Relationships
+     ↓
+Level 1 / Level 2 Graph
+Senzing can also provide related entities and relationship/matching information that can be consumed downstream.
+Example
+Suppose you have:
+Alpha Urban Holdings Inc
+Alpha Urban Holdings
+Alpha Urban Hldgs Inc
+Senzing:
+         ENTITY 12345
+               │
+     ┌─────────┼─────────┐
+     ↓         ↓         ↓
+    CRM       KYC      Trading
+Neo4j then stores:
+(:Entity {senzingId: 12345})
+       │
+       │ OWNS
+       ↓
+(:Entity {senzingId: 67890})
+So:
+Senzing identifies the node. Neo4j connects the node.
+That's a very strong explanation for your manager.
+________________
+4. You can use Senzing in the graph itself
+Look at your graph screenshot. It currently has lots of labels such as:
+Alpha Urban Holdings
+Delta Real Estate
+Keystone Trading
+...
+You could add a small information panel when someone clicks a node:
+Alpha Urban Holdings Inc
+Senzing Entity ID: 12345
+Resolved Records: 4
+MATCH EVIDENCE
+────────────────────
+✓ Organization name
+✓ Address
+✓ Registration ID
+✓ Country
+Related Senzing Entities: 16
+Neo4j Network Entities: 16
+This is much more convincing than simply showing a graph.
+________________
+5. Scenarios tab
+Your scenario screenshot shows things like:
+Alpha Holdings Deterioration
+24 impacted entities
+$1.48B EAD impact
+$18.5M ECL
+Senzing shouldn't calculate the $1.48B.
+That's your risk engine.
+But Senzing can help answer:
+Which records/entities are actually impacted?
+For example:
+Scenario Trigger
+       ↓
+Alpha Urban Holdings
+       ↓
+Senzing Entity 12345
+       ↓
+Neo4j
+       ↓
+Connected entities
+       ↓
+Risk engine
+       ↓
+EAD / ECL / RWA
+So the responsibility becomes:
+Senzing → WHO?
+Neo4j   → CONNECTED TO WHOM?
+Risk Engine → HOW MUCH RISK?
+That's a very clean architecture.
+___________________________________
+6. Credit Committee Dashboard
+This is another place I'd add Senzing information.
+Your dashboard currently says:
+Enhanced Monitoring Recommended
+Imagine the committee sees:
+Entity Resolution Summary
+Alpha Urban Holdings Inc
+Resolved source records: 7
+CRM              ✓
+KYC              ✓
+Trading          ✓
+Credit           ✓
+External Ref.    ✓
+Entity confidence: High
+Potential related entities: 16
+Network entities: 125
+Then the credit committee can have greater confidence that:
+"The $6.78B group exposure is actually associated with the correct counterparty."
+This is important because bad entity resolution can lead to bad risk aggregation.
+________________
+7. Risk Copilot — probably the most interesting use
+You have a Risk Copilot tab.
+This could use Senzing's explanation capabilities.
+For example, the user asks:
+"Why is Alpha Urban Holdings connected to Alpha Healthcare?"
+The backend could combine:
+Senzing
+Why are these records/entities related?
+with:
+Neo4j
+What path connects them?
+and:
+Risk Engine
+What exposure exists along that path?
+Then Risk Copilot could answer:
+Alpha Urban Holdings and Alpha Healthcare
+are connected through a common ownership structure.
+Path:
+Alpha Urban Holdings
+       ↓ OWNS 80%
+Delta Real Estate
+       ↓ OWNS 60%
+Alpha Healthcare
+Connected EAD: $XXX
+Senzing has explicit why analysis functions for explaining entity-resolution outcomes, including why entities or records did or did not resolve.
+That makes Risk Copilot + Senzing a particularly interesting combination.
+________________
+8. Your Level 1 / Level 2 concept
+Your application currently says:
+Level 1 = direct
+Level 2 = indirect
+That's primarily a Neo4j graph traversal concept, not a Senzing concept.
+For example:
+             Level 1
+        ┌─────────────────┐
+        ↓                 ↓
+      Delta             Prime
+        │                 │
+        ↓                 ↓
+      Apex             Omega
+              Level 2
+Neo4j determines those graph hops.
+But Senzing helps make sure that:
+"Delta Real Estate LLC"
+"Delta Real Estate"
+"Delta RE LLC"
+aren't accidentally treated as three unrelated entities.
+So:
+                SENZING
+                    ↓
+           Correct Entity Identity
+                    ↓
+                 NEO4J
+                    ↓
+             Graph Traversal
+                    ↓
+          Level 1 / Level 2
+                    ↓
+              Risk Analysis
+________________
+9. I would add one new concept to your UI
+Your existing tabs are good, but I'd add a small Entity Resolution section inside Counterparty 360 rather than necessarily creating another top-level tab.
+Something like:
+┌───────────────────────────────────────────┐
+│ Alpha Urban Holdings Inc                 │
+│ Senzing Entity ID: 12345                 │
+├───────────────────────────────────────────┤
+│ ENTITY RESOLUTION                         │
+│                                           │
+│ Source       Record              Match    │
+│ CRM          CRM-1001            ✓        │
+│ KYC          KYC-4451            ✓        │
+│ Trading      TRD-7832            ✓        │
+│ Credit       CR-9912             ✓        │
+│                                           │
+│ [Why resolved?] [View source records]    │
+└───────────────────────────────────────────┘
+Clicking "Why resolved?" could call Senzing's explanation functionality.
+________________
+10. The architecture I'd recommend to your manager
+I'd present it like this:
+                 DATA SOURCES
+     ┌────────┬────────┬────────┬────────┐
+     │  CRM   │  KYC   │Trading │ Credit │
+     └───┬────┴───┬────┴───┬────┴───┬────┘
+         │        │        │        │
+         └────────┴────────┴────────┘
+                         ↓
+                ┌─────────────────┐
+                │     SENZING     │
+                │                 │
+                │ Entity          │
+                │ Resolution      │
+                └────────┬────────┘
+                         │
+                  Canonical/
+                  resolved IDs
+                         ↓
+                ┌─────────────────┐
+                │      NEO4J      │
+                │                 │
+                │ Entities        │
+                │ Ownership       │
+                │ Guarantees      │
+                │ Facilities      │
+                │ Relationships   │
+                └────────┬────────┘
+                         ↓
+              ┌─────────────────────┐
+              │    RISK ENGINE      │
+              │ EAD / ECL / RWA     │
+              │ Contagion           │
+              │ Scenarios           │
+              └──────────┬──────────┘
+                         ↓
+          CONNECTED COUNTERPARTY
+                RISK PLATFORM
+                         ↓
+ ┌─────────┬────────┬────────┬──────────┬─────────┐
+ ↓         ↓        ↓        ↓          ↓         ↓
+Overview  Counter-  360   Relationship Scenarios  Copilot
+          parties          Graph
+Senzing is designed to be source/destination agnostic, so this type of downstream architecture is consistent with how it can be integrated into an enterprise system.
