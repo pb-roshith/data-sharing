@@ -1,0 +1,24 @@
+51)User-wise logging is implemented. Audit logs capture the user ID, timestamp, action/event, source IP, affected resource, and success or failure status.
+
+52)Event-wise logging is implemented for HTTP requests, administrative actions, and system errors, recording the event type, user ID, affected resource, source IP, and success/failure status in the database audit trail.
+
+68)No financial transactions are performed in this application. Audit trails are maintained for sensitive user activities, including login attempts, password changes/resets, administrative actions, and document exports.
+
+70)Generated reports and exports are created on demand in memory and streamed directly to the browser without saving the output files to the web server’s file system.
+
+73)No financial transactions are performed. Unique event IDs are generated for audit records, including sensitive user activities, to support traceability.
+
+93)No. Sessions are stored in the server-side database with SHA-256 token hashes and expiry timestamps. Raw tokens are held only temporarily in memory during request processing.
+
+98)No financial transactions are performed. Session IDs are renewed on login, but are not renewed before each sensitive user operation.
+
+99)No. Each account is restricted to one active session. A new login invalidates the previous session.
+
+100)Yes. Sessions expire after a configured maximum period, even during active use (defaults: 30 minutes for relationship managers/credit analysts and 15 minutes for administrators). Further access requires signing in again.
+
+112)Not applicable to financial transactions, as the application does not perform them. Application exceptions are logged, but automatic alarms for consecutive exceptions are not implemented.
+
+186)Memory is managed automatically by Python’s garbage collector, and database sessions are closed after use.
+
+
+
