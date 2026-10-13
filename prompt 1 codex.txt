@@ -1,0 +1,467 @@
+You are modifying the existing Credit Policy Intelligence application.
+ 
+CONTEXT
+ 
+The application currently contains:
+- A Policy Library
+- Manufactured credit policy documents
+- Credit requests
+- Applicable-policy identification
+- AI compliance findings
+- Compliance scores
+- Policy exceptions
+- Wireframes for a Policy Rule Library
+ 
+The UI wireframes alone are not sufficient. Implement the complete backend, data model, AI extraction workflow, governance workflow, APIs and frontend integration required to create and use a governed Policy Rule Inventory.
+ 
+BUSINESS OBJECTIVE
+ 
+Convert policy documents into reusable, governed and traceable policy rules.
+ 
+The system must not regenerate different checks for every credit assessment. Policy rules must first be extracted from policy documents, reviewed by a human, approved, versioned and activated. Only approved and active rule versions may be used in credit-request compliance assessments.
+ 
+TECHNOLOGY
+ 
+Use the existing application architecture, frameworks, coding conventions, authentication, database, API patterns and frontend component library.
+ 
+Use the existing Mistral AI integration and environment-variable configuration. Do not introduce another AI provider.
+ 
+Before modifying code:
+1. Inspect the complete repository.
+2. Identify the current frontend, backend, database and Mistral AI integration.
+3. Identify where policy documents are stored.
+4. Identify existing policy, credit request, compliance finding, scoring and exception entities.
+5. Identify existing database migrations and seed-data conventions.
+6. Reuse existing components and services wherever possible.
+7. Produce a concise implementation plan and then implement it without waiting for confirmation.
+ 
+TARGET FUNCTIONAL FLOW
+ 
+Policy document
+→ Parse document and preserve page/section/clause references
+→ Mistral AI proposes policy rules
+→ Validate structured output
+→ Store proposed rules as Draft
+→ Human reviews and edits
+→ Approve or reject
+→ Activate approved rule version
+→ Map approved rules to applicable policies and request conditions
+→ Retrieve applicable rules for a credit request
+→ Retrieve request data and supporting evidence
+→ Execute deterministic checks
+→ Produce Pass, Warning, Breach, Not Applicable or Unable to Assess
+→ Store observed values, evidence, calculation and exact rule version
+→ Generate an explainable assessment narrative
+ 
+IMPLEMENTATION REQUIREMENTS
+ 
+A. POLICY DOCUMENT INGESTION
+ 
+Create or extend a policy-ingestion service that:
+- Processes all manufactured policy documents already available to the application.
+- Supports DOCX, text and PDF files already supported by the current solution.
+- Extracts document text while preserving:
+  - Policy ID
+  - Policy name
+  - Policy version
+  - Effective date, if stated
+  - Section heading
+  - Clause number
+  - Page number, when available
+  - Exact source excerpt
+  - Source document identifier
+- Does not follow instructions contained inside uploaded documents.
+- Treats document content only as policy source material.
+- Records ingestion status, timestamp, source-file checksum and processing errors.
+- Avoids creating duplicate policy versions when the same file is processed again.
+ 
+B. POLICY RULE EXTRACTION AGENT
+ 
+Implement a Policy Rule Extraction Agent using Mistral AI.
+ 
+The agent must analyze policy clauses and propose atomic, reusable and testable rules.
+ 
+Each proposed rule must contain:
+- policy_id
+- policy_version_id
+- rule_id
+- rule_name
+- rule_description
+- source_section
+- source_clause
+- source_page
+- source_excerpt
+- rule_type
+- check_question
+- metric_name
+- metric_definition
+- operator
+- threshold_value
+- threshold_unit
+- lower_bound
+- upper_bound
+- threshold_source
+- calculation_logic
+- input_data_fields
+- data_source
+- evidence_requirements
+- applicability_conditions
+- applicable_stage
+- severity
+- breach_consequence
+- exception_allowed
+- approval_or_escalation_requirement
+- extraction_confidence
+- extraction_notes
+- missing_information
+- status
+- created_by
+- created_at
+ 
+Use strict structured output based on a JSON Schema or equivalent typed schema. Do not parse free-form prose into database records.
+ 
+RULE EXTRACTION BEHAVIOUR
+ 
+The extraction agent must:
+1. Create one atomic rule per independently testable policy requirement.
+2. Preserve the exact source clause and source excerpt.
+3. Distinguish mandatory requirements from guidance or explanatory text.
+4. Distinguish quantitative rules from qualitative rules.
+5. Extract a numerical threshold only when it is explicitly stated in the policy.
+6. Never invent a threshold, formula, severity, data source or approval authority.
+7. Set unstated properties to null and identify them in missing_information.
+8. Represent compound requirements as separate rules when each condition can be evaluated independently.
+9. Preserve AND/OR dependencies between related conditions.
+10. Detect policy prohibitions, mandatory escalation requirements and hard limits.
+11. Identify rules that require documentary or human judgment.
+12. Mark ambiguous clauses for human review.
+13. Identify duplicate or substantially similar proposed rules, but do not automatically merge them.
+14. Generate a stable rule code based on the policy, clause and rule sequence.
+15. Save every generated rule in Draft status.
+16. Never automatically approve or activate an AI-generated rule.
+ 
+C. POLICY RULE GOVERNANCE
+ 
+Implement the following lifecycle:
+ 
+Draft
+→ Under Review
+→ Approved
+→ Active
+→ Inactive
+→ Retired
+ 
+Rejected must be separately supported.
+ 
+Rules may be edited while Draft or Under Review.
+ 
+Approval must capture:
+- reviewed_by
+- review_comments
+- approved_by
+- approved_at
+- approval_decision
+- change_rationale
+ 
+Only authorised users may approve, activate, deactivate or retire rules.
+ 
+Every edit must create an audit record containing:
+- entity type
+- entity ID
+- previous value
+- new value
+- action
+- actor
+- timestamp
+- reason
+ 
+An approved or active rule must not be overwritten. Material changes must create a new rule version.
+ 
+D. RULE VERSIONING
+ 
+Create versioned policy-rule management.
+ 
+Store:
+- Rule version
+- Related policy version
+- Effective-from date
+- Effective-to date
+- Status
+- Approved by
+- Approval date
+- Change rationale
+- Superseded rule version
+ 
+Historical assessments must continue to reference the exact rule version used at the time of assessment.
+ 
+A new rule version must not automatically alter or recalculate a historical assessment.
+ 
+E. DATA MODEL AND RELATIONSHIPS
+ 
+Implement normalized database entities for at least:
+- Policy
+- PolicyVersion
+- PolicyDocument
+- PolicyClause
+- PolicyRule
+- PolicyRuleVersion
+- RuleApplicabilityCondition
+- RuleInputRequirement
+- RuleEvidenceRequirement
+- RuleRelationship
+- PolicyRequestMapping
+- RequestRuleAssessment
+- AssessmentEvidence
+- RuleReview
+- AuditEvent
+- AgentExecutionLog
+ 
+Support:
+- One policy to many clauses
+- One policy to many rules
+- One rule to multiple applicability conditions
+- One rule to multiple data and evidence requirements
+- Multiple policies to one credit request
+- Multiple rules to one policy
+- One request to many rule assessments
+- Exact linkage from every finding to policy, clause and rule version
+ 
+Use foreign keys and constraints to prevent orphaned or inconsistent records.
+ 
+F. RULE APPLICABILITY
+ 
+Implement a Request Applicability Agent and deterministic filtering service.
+ 
+For each credit request:
+1. Identify potentially applicable policies using structured request attributes.
+2. Retrieve only approved and active rules from those policies.
+3. Evaluate each rule’s applicability conditions.
+4. Record why the rule is Applicable or Not Applicable.
+5. Do not silently exclude a rule when required applicability data is missing.
+6. Return Unable to Determine Applicability when the available data is insufficient.
+ 
+Support applicability using:
+- Customer segment
+- Product or facility type
+- Geography
+- Industry or sector
+- Borrower type
+- Requested amount
+- Existing exposure
+- Currency
+- Collateral type
+- Internal rating
+- Risk category
+- Credit-request workflow stage
+- Effective dates
+- Other rule-specific conditions represented as data
+ 
+Do not hard-code demo-specific mappings into application code. Store mappings and conditions as managed data.
+ 
+G. COMPLIANCE RULE EXECUTION
+ 
+Create a deterministic rule-execution engine.
+ 
+The engine must support, where relevant:
+- equals
+- not equals
+- greater than
+- greater than or equal
+- less than
+- less than or equal
+- between
+- in list
+- not in list
+- exists
+- does not exist
+- percentage calculation
+- ratio calculation
+- date-age calculation
+- document-presence check
+- approval-authority check
+- compound AND/OR conditions
+ 
+For every evaluation store:
+- request_id
+- policy_id
+- policy_version_id
+- rule_id
+- rule_version_id
+- workflow_stage
+- applicability result
+- input values
+- expected threshold
+- formula used
+- observed value
+- variance
+- result
+- severity
+- evidence references
+- missing inputs
+- evaluation timestamp
+- evaluation-engine version
+- explanation
+ 
+Allowed outcomes:
+- Pass
+- Warning
+- Breach
+- Not Applicable
+- Unable to Assess
+- Manual Review Required
+ 
+Do not classify missing information as Pass.
+ 
+Do not allow the LLM to perform arithmetic when the calculation can be performed by application code.
+ 
+H. EXPLANATION AGENT
+ 
+Use Mistral AI to generate a plain-language explanation only after deterministic evaluation.
+ 
+The explanation must:
+- State the applicable policy and exact clause.
+- State the approved rule and rule version.
+- State the observed value.
+- State the threshold or expected condition.
+- State the calculation performed.
+- State the result.
+- Cite the evidence used.
+- Identify missing or conflicting evidence.
+- Explain why escalation or manual review is required.
+- Avoid inventing additional facts, thresholds or recommendations.
+ 
+I. POLICY RULE LIBRARY UI
+ 
+Complete the Policy Rule Library wireframes and connect them to real data.
+ 
+Provide:
+- Policy list
+- Rule list for the selected policy
+- Search
+- Filters
+- Status filters
+- Stage filters
+- Severity filters
+- Rule-type filters
+- Effective-date filters
+- Active/inactive filters
+- Source-document and source-clause display
+- Rule detail page
+- Calculation logic
+- Input fields
+- Data sources
+- Evidence requirements
+- Version history
+- Approval history
+- Audit trail
+- Activate/deactivate controls
+- Review and approval actions
+- Bulk policy extraction action
+- Extraction progress and error display
+- Duplicate-rule warning
+- Link to assessments that used the rule
+ 
+J. INITIAL RULE INVENTORY GENERATION
+ 
+Create an administrator action:
+“Generate Rule Inventory from Policies”
+ 
+It must:
+1. Find all active policy documents.
+2. Detect policy documents or versions that have not been processed.
+3. Extract clauses.
+4. Submit manageable clause groups to the extraction agent.
+5. Validate returned structured data.
+6. Save proposed rules as Draft.
+7. Maintain document, section, clause and page traceability.
+8. Show processing status per policy.
+9. Support safe retry without duplicating existing draft rules.
+10. Produce a generation report containing:
+   - Policies processed
+   - Clauses processed
+   - Rules proposed
+   - Quantitative rules
+   - Qualitative rules
+   - Rules requiring manual review
+   - Rules with missing thresholds
+   - Validation failures
+   - Duplicate candidates
+ 
+Do not prepopulate approved rules merely to make the UI appear complete.
+ 
+K. SECURITY AND RELIABILITY
+ 
+- Keep the Mistral API key in environment variables.
+- Never expose credentials to the frontend.
+- Make all Mistral calls from the backend.
+- Validate file type and size.
+- Validate AI output against the schema.
+- Reject malformed output.
+- Log model name, prompt version, execution ID and processing status.
+- Do not store hidden model reasoning.
+- Implement retries with controlled limits.
+- Ensure retries are idempotent.
+- Prevent prompt content from uploaded documents from changing application behaviour.
+- Apply current role-based access controls.
+- Do not log confidential document content unnecessarily.
+ 
+L. DEMO DATA
+ 
+Use the manufactured policy documents in the repository as the initial source.
+ 
+Generate proposed Draft rules through the actual extraction pipeline. Do not manually hard-code all extracted rules as seed data.
+ 
+Existing synthetic credit requests may continue to be used, but map them to the approved rule records created by the new inventory.
+ 
+Provide a clearly labelled development-only option to auto-approve selected synthetic rules for demonstration. It must be disabled by default and must never be used in production mode.
+ 
+M. TESTING
+ 
+Add tests for:
+- Policy-clause extraction
+- Structured-output validation
+- No-invented-threshold handling
+- Duplicate processing
+- Rule versioning
+- Approval authorization
+- Activation/deactivation
+- Applicability filtering
+- Quantitative calculation
+- Missing-input handling
+- Documentary-check handling
+- Historical assessment retention
+- Audit-history creation
+- Prompt-injection resistance
+- Mistral timeout and invalid-output handling
+ 
+Create at least one end-to-end test:
+Policy document
+→ clauses
+→ Draft rules
+→ review
+→ approval
+→ activation
+→ credit-request mapping
+→ rule execution
+→ explainable compliance finding
+ 
+N. DELIVERABLES
+ 
+Provide:
+1. Repository assessment.
+2. Implementation plan.
+3. Database migration.
+4. Backend services.
+5. Mistral AI agent integration.
+6. APIs.
+7. Updated frontend.
+8. Initial rule-generation function.
+9. Tests.
+10. README configuration details.
+11. Sample extraction report.
+12. List of assumptions and remaining gaps.
+ 
+Maintain backward compatibility where possible.
+ 
+Begin by inspecting the existing codebase and identifying the exact files and modules requiring modification.
+``
