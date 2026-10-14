@@ -1,0 +1,662 @@
+We have now implemented the governed Policy Rule Inventory and policy-rule extraction capability.
+ 
+The Policy Rule Library contains Policy, Rule, Check, Metric, Threshold, Stage Applicable, Severity, Data Source, Calculation Logic and Evidence Requirements.
+ 
+For a given credit request, the application can identify applicable policies and applicable rules.
+ 
+However, many compliance assessments currently show "Actual Data: Unavailable" because the application does not yet have a sufficiently comprehensive structured credit-request data model containing the observed customer/request values required by those rules.
+ 
+We now need to implement the CREDIT REQUEST DATA AND EVIDENCE LAYER.
+ 
+OBJECTIVE
+ 
+Create a canonical structured data model containing the actual facts required to evaluate the policy rules.
+ 
+For the current capability demonstrator:
+- Generate realistic but entirely synthetic structured data.
+- Populate the data for the existing synthetic credit requests.
+- Ensure the generated values support meaningful Pass, Warning, Breach and Unable-to-Assess scenarios.
+ 
+For the future architecture:
+- Design the same canonical model so the data can later be populated from:
+  1. credit memos,
+  2. facility applications,
+  3. financial statements,
+  4. collateral documents,
+  5. covenant documents,
+  6. supporting customer documents,
+  7. bank credit workflow systems,
+  8. customer/master-data systems,
+  9. exposure systems,
+  10. rating systems,
+  11. collateral systems,
+  12. other structured or unstructured evidence sources.
+ 
+Do NOT create separate demo-only fields that cannot later support real extraction/integration.
+ 
+===========================================================
+STEP 1 - DERIVE THE REQUIRED DATA SCHEMA FROM THE RULE LIBRARY
+===========================================================
+ 
+Do not guess the data schema upfront.
+ 
+Inspect all currently extracted Policy Rules in the Policy Rule Inventory.
+ 
+Across all rules, analyze:
+- metric
+- check
+- threshold
+- calculation logic
+- input data fields
+- data source
+- evidence requirements
+- applicability conditions
+- workflow stage
+ 
+Create a consolidated inventory of ALL unique data attributes required to evaluate those rules.
+ 
+For every required attribute capture:
+ 
+- canonical_field_name
+- business_name
+- business_definition
+- data_type
+- unit
+- allowed_values
+- required/optional
+- domain
+- source rule IDs
+- applicable policy IDs
+- expected source systems/documents
+- calculation method if derived
+- temporal/as-of-date requirement
+- evidence requirement
+- validation rules
+ 
+Avoid creating duplicate fields for semantically equivalent attributes.
+ 
+Where two extracted rules appear to require the same business attribute under different names, map them to one canonical attribute but retain aliases.
+ 
+Do not invent the actual policy threshold.
+ 
+Thresholds continue to come from the Policy Rule Library.
+ 
+===========================================================
+STEP 2 - CREATE CANONICAL CREDIT DATA DOMAINS
+===========================================================
+ 
+Based on the actual requirements from the Policy Rule Inventory, create normalized data entities.
+ 
+At minimum evaluate whether the following domains are required:
+ 
+A. BORROWER
+ 
+Examples:
+- borrower identifier
+- borrower name
+- customer segment
+- legal entity type
+- country
+- incorporation country
+- operating geography
+- industry
+- sector/subsector
+- internal rating
+- external rating
+- risk classification
+ 
+B. CREDIT REQUEST
+ 
+Examples:
+- request ID
+- request date
+- workflow stage
+- request type
+- requested amount
+- requested currency
+- purpose
+- request status
+- relationship manager
+ 
+C. FACILITY
+ 
+Support multiple facilities per credit request.
+ 
+Examples:
+- facility ID
+- facility type
+- product type
+- committed amount
+- drawn amount
+- undrawn amount
+- requested amount
+- currency
+- start date
+- maturity date
+- tenor months
+- repayment structure
+- amortization
+- revolving/non-revolving
+- secured/unsecured
+- pricing/spread
+- interest rate
+- seniority
+ 
+IMPORTANT:
+tenor_months should be capable of being derived deterministically from start/maturity dates where appropriate.
+ 
+D. EXPOSURE
+ 
+Examples:
+- current exposure
+- proposed exposure
+- total exposure
+- committed exposure
+- drawn exposure
+- undrawn exposure
+- group exposure
+- connected-counterparty exposure
+- sector exposure
+- geography exposure
+- concentration metrics
+ 
+E. FINANCIAL INFORMATION
+ 
+Support multiple reporting periods.
+ 
+Examples:
+- revenue
+- EBITDA
+- EBIT
+- total debt
+- net debt
+- cash
+- interest expense
+- operating cash flow
+- total assets
+- tangible net worth
+- equity
+- current assets
+- current liabilities
+- debt maturity information
+ 
+F. FINANCIAL/RISK METRICS
+ 
+Prefer deterministic derivation from underlying financial data where possible.
+ 
+Examples may include:
+- leverage
+- net leverage
+- debt/EBITDA
+- DSCR
+- interest coverage
+- liquidity ratios
+- LTV
+- collateral coverage
+- other metrics actually necessary for extracted rules
+ 
+Do not create a metric merely because it appears in this prompt.
+Create it only when needed by the Policy Rule Inventory or existing application requirements.
+ 
+G. COLLATERAL
+ 
+Support multiple collateral items.
+ 
+Examples:
+- collateral type
+- description
+- owner
+- valuation amount
+- valuation date
+- currency
+- eligible value
+- haircut
+- post-haircut value
+- lien/security status
+- valuation source
+- valuation age
+- coverage ratio
+ 
+H. COVENANTS
+ 
+Support multiple covenants.
+ 
+Examples:
+- covenant type
+- metric
+- agreed threshold
+- observed value
+- testing frequency
+- next test date
+- breach status
+ 
+I. APPROVAL / DELEGATED AUTHORITY
+ 
+Examples:
+- requested approval level
+- required approval authority
+- approving authority
+- approver
+- decision
+- decision date
+- approval limit
+- escalation required
+ 
+J. DOCUMENTATION AND CONDITIONS
+ 
+Examples:
+- required document type
+- document received
+- document date
+- valid/expired
+- completeness status
+- condition precedent
+- condition satisfied
+ 
+K. GUARANTEES
+ 
+If needed by rules:
+- guarantor
+- guarantee type
+- guarantee amount
+- currency
+- coverage
+- validity
+ 
+L. RISK / WATCHLIST / CLASSIFICATION
+ 
+If needed:
+- risk grade
+- watchlist status
+- default status
+- delinquency status
+- restructuring flag
+- other policy-relevant classification
+ 
+===========================================================
+STEP 3 - CREATE ATTRIBUTE REGISTRY
+===========================================================
+ 
+Create a managed Credit Data Attribute Registry.
+ 
+Every field required by a policy rule should be registered.
+ 
+Example conceptual record:
+ 
+Attribute:
+facility.tenor_months
+ 
+Business Name:
+Facility Tenor
+ 
+Definition:
+Requested contractual facility tenor expressed in months.
+ 
+Data Type:
+integer
+ 
+Unit:
+months
+ 
+Possible Source:
+Credit memo / facility application / credit workflow system
+ 
+Derived:
+Yes/No
+ 
+Derivation:
+If valid start and maturity dates exist, calculate using deterministic application logic.
+ 
+Used By:
+List of rule IDs
+ 
+Do this for all attributes actually required by the current Policy Rule Inventory.
+ 
+This registry will become the mapping layer between:
+ 
+POLICY RULE REQUIREMENT
+and
+CUSTOMER / BANK DATA.
+ 
+===========================================================
+STEP 4 - MAP EVERY RULE TO ACTUAL-DATA FIELDS
+===========================================================
+ 
+For every active Policy Rule, define explicitly:
+ 
+- which canonical attribute(s) are required,
+- which are applicability attributes,
+- which are calculation inputs,
+- which field represents the observed/actual value,
+- which evidence is expected,
+- whether the field is raw or derived,
+- what happens when the data is missing.
+ 
+Example:
+ 
+Rule:
+Revolving Credit Facility Tenor Limit
+ 
+Threshold:
+<= 5 years
+ 
+Required actual field:
+facility.tenor_months
+ 
+Actual:
+36 months
+ 
+Threshold normalized:
+60 months
+ 
+Result:
+PASS
+ 
+Do not compare incompatible units.
+ 
+Normalize units deterministically before evaluation.
+ 
+If the required field is absent:
+ 
+Result:
+UNABLE_TO_ASSESS
+ 
+Do NOT create synthetic values dynamically merely to obtain a Pass/Fail result during assessment.
+ 
+===========================================================
+STEP 5 - CREATE SYNTHETIC DATA GENERATOR
+===========================================================
+ 
+Build a development/demo synthetic credit-data generator.
+ 
+The synthetic generator must use the canonical schema.
+ 
+Populate the existing synthetic credit requests.
+ 
+Generate internally coherent data.
+ 
+Examples:
+ 
+If:
+start_date = 2026-01-01
+maturity_date = 2029-01-01
+ 
+then:
+tenor must be consistent with those dates.
+ 
+If:
+total_debt = 400
+EBITDA = 100
+ 
+then a debt/EBITDA measure using those inputs must be mathematically consistent with the defined calculation logic.
+ 
+If:
+collateral_value = 100
+exposure = 80
+ 
+derived ratios must be calculated rather than independently randomized.
+ 
+Do not blindly randomize every field.
+ 
+Use dependency-aware synthetic generation.
+ 
+===========================================================
+STEP 6 - BUILD POLICY-AWARE SYNTHETIC SCENARIOS
+===========================================================
+ 
+The demo requires meaningful compliance scenarios.
+ 
+Generate controlled scenarios containing:
+ 
+- compliant requests
+- requests close to thresholds
+- policy breaches
+- multiple simultaneous breaches
+- missing information
+- contradictory evidence where appropriate for testing
+- rules requiring manual review
+ 
+IMPORTANT:
+ 
+Do not change policy thresholds to fit the synthetic data.
+ 
+Policy thresholds always come from the approved Rule Library.
+ 
+Instead, generate the synthetic request values around those approved thresholds.
+ 
+Example:
+ 
+Approved policy threshold:
+Facility tenor <= 60 months
+ 
+Possible synthetic actuals:
+36 months -> Pass
+60 months -> Boundary case
+72 months -> Breach
+NULL -> Unable to Assess
+ 
+Exact result must follow the rule's operator.
+ 
+Do not assume that equality passes unless the approved operator permits equality.
+ 
+===========================================================
+STEP 7 - STORE DATA PROVENANCE
+===========================================================
+ 
+Every credit-request attribute must have provenance.
+ 
+Create a provenance structure containing:
+ 
+- request_id
+- attribute_name
+- value
+- unit
+- source_type
+- source_identifier
+- source_document_id
+- source_page
+- source_section
+- source_excerpt/reference where applicable
+- extraction_method
+- confidence
+- extracted_at
+- model/version if AI extracted
+- verified_by
+- verification_status
+- last_updated_at
+ 
+For synthetic data:
+ 
+source_type = SYNTHETIC
+and it must be clearly identifiable as manufactured/demo data.
+ 
+Never represent synthetic data as customer-supplied or bank-system data.
+ 
+===========================================================
+STEP 8 - FUTURE DOCUMENT EXTRACTION ARCHITECTURE
+===========================================================
+ 
+Design but do not fake a future Credit Data Extraction Agent.
+ 
+The intended future architecture is:
+ 
+Customer/Bank documents
+        ↓
+Document parsing / OCR if required
+        ↓
+Credit Data Extraction Agent
+        ↓
+Canonical Credit Data Schema
+        ↓
+Validation / Human verification where necessary
+        ↓
+Policy Rule Engine
+ 
+The future extraction agent must map extracted information into the SAME canonical schema used by the synthetic-data generator.
+ 
+Do not create a separate schema for AI-extracted document values.
+ 
+Prepare interfaces/services so that synthetic, manually entered, document-extracted and system-sourced values can all populate the same canonical data layer.
+ 
+Support source types such as:
+ 
+SYNTHETIC
+MANUAL
+DOCUMENT_EXTRACTED
+BANK_SYSTEM
+DERIVED
+ 
+===========================================================
+STEP 9 - ACTUAL DATA RESOLUTION SERVICE
+===========================================================
+ 
+Implement an Actual Data Resolution Service.
+ 
+Given a policy rule and credit request, it must:
+ 
+1. Read the rule's required canonical fields.
+2. Retrieve the fields from the canonical request data model.
+3. Retrieve or calculate derived fields.
+4. Validate units and data types.
+5. Check freshness/as-of-date requirements where defined.
+6. Identify missing fields.
+7. Retrieve provenance/evidence.
+8. Return the observed actual value(s) to the deterministic compliance engine.
+ 
+Return structured output such as:
+ 
+{
+  "rule_id": "...",
+  "request_id": "...",
+  "required_fields": [...],
+  "resolved_fields": [...],
+  "missing_fields": [...],
+  "actual_value": ...,
+  "unit": "...",
+  "provenance": [...],
+  "resolution_status": "COMPLETE | PARTIAL | MISSING | CONFLICTING"
+}
+ 
+The service must NOT generate missing actual values during a real compliance assessment.
+ 
+===========================================================
+STEP 10 - INTEGRATE WITH COMPLIANCE REVIEW
+===========================================================
+ 
+Update the Compliance Review UI.
+ 
+For each assessed rule show:
+ 
+Policy
+Rule
+Threshold
+Actual Value
+Unit
+Result
+Source
+Evidence
+As-of Date
+Confidence / Verification Status where relevant
+ 
+Allow the user to inspect:
+ 
+"Where did this actual value come from?"
+ 
+For synthetic data display:
+"Manufactured Demonstration Data"
+ 
+For document-extracted data display the document/evidence provenance.
+ 
+For system data display the source system/reference.
+ 
+===========================================================
+STEP 11 - COVERAGE ANALYSIS
+===========================================================
+ 
+Once the schema has been derived and synthetic data generated, produce a Rule Data Coverage Report.
+ 
+For every active rule report:
+ 
+- Rule ID/name
+- Policy
+- Required actual-data fields
+- Fields available
+- Fields missing
+- Derived fields available
+- Evidence available
+- Data source
+- Whether rule is currently executable
+- Reason if not executable
+ 
+Also provide aggregate counts generated directly from the database for:
+- rules fully evaluable,
+- rules partially supported,
+- rules lacking actual data,
+- rules requiring manual/documentary assessment.
+ 
+Do not fabricate these counts.
+ 
+===========================================================
+STEP 12 - TESTING
+===========================================================
+ 
+Create tests for:
+ 
+- tenor threshold comparison
+- unit normalization
+- derived tenor
+- leverage calculation
+- collateral ratios
+- missing data
+- conflicting data
+- boundary thresholds
+- multi-facility requests
+- multiple reporting periods
+- provenance
+- synthetic-data identification
+- rule/attribute mapping
+- historical assessment snapshots
+ 
+Create at least one end-to-end scenario:
+ 
+Policy Rule
+→ required attribute
+→ synthetic credit-request value
+→ actual-data resolution
+→ deterministic calculation
+→ Pass/Warning/Breach
+→ evidence/provenance display.
+ 
+===========================================================
+IMPORTANT DESIGN PRINCIPLES
+===========================================================
+ 
+1. POLICY THRESHOLD and ACTUAL CUSTOMER VALUE are different data domains.
+ 
+2. Thresholds come from the approved Policy Rule Inventory.
+ 
+3. Actual values come from the canonical Credit Request Data Model.
+ 
+4. Do not let Mistral invent missing actual customer data during assessment.
+ 
+5. For the demonstrator, actual values may be synthetically manufactured in advance and clearly labelled as synthetic.
+ 
+6. Later, document-extraction agents and bank-system connectors should populate the same schema.
+ 
+7. Derived values should be calculated by deterministic application logic wherever possible.
+ 
+8. Preserve provenance for every important value.
+ 
+9. Missing data must result in Unable to Assess or the appropriate existing equivalent, never an invented value.
+ 
+10. Use the existing application technologies, services, database, API architecture and coding patterns.
+ 
+Before coding:
+- inspect the existing Policy Rule Inventory,
+- inspect the existing Credit Request schema,
+- identify all required fields across the active rules,
+- identify existing fields that can be reused,
+- produce the schema-gap analysis,
+- then implement the missing canonical model and synthetic data generation.
+ 
+Do not rebuild working functionality unnecessarily.
