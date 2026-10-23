@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shadow AI Discovery – Prototype Wireframe v2</title>
+<style>
+:root{--nav:#13243a;--blue:#2f6fdb;--bg:#f3f5f8;--line:#dbe2ea;--text:#1a2537;--mut:#65728a;--g:#1f8a57;--a:#a87400;--r:#c03838;--p:#6b4fc7;--gr:#7b8798}
+*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+a{color:var(--blue);cursor:pointer;text-decoration:none}
+.side{position:fixed;inset:0 auto 0 0;width:230px;background:var(--nav);color:#fff;padding:16px 12px;overflow:auto}
+.side h2{font-size:15px;margin:2px 8px}.side small{display:block;margin:2px 8px 16px;opacity:.6}
+.side .lbl{font-size:10px;letter-spacing:.08em;text-transform:uppercase;opacity:.5;margin:14px 10px 4px}
+.side button{display:block;width:100%;text-align:left;background:none;border:0;color:#d3dff0;padding:9px 12px;border-radius:6px;cursor:pointer;font-size:13px}
+.side button.on,.side button:hover{background:#2c5ea8;color:#fff}
+.main{margin-left:230px;padding:20px 26px 40px}
+h1{font-size:21px;margin:0 0 4px}h3{margin:0 0 10px;font-size:14px}.sub{color:var(--mut)}
+.hd{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;font-size:13px;white-space:nowrap}.btn.s{background:#fff;color:var(--text);border:1px solid var(--line)}.btn.live{background:var(--p)}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:15px;margin-bottom:14px}
+.g{display:grid;gap:12px}.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:repeat(3,1fr)}.c4{grid-template-columns:repeat(4,1fr)}
+table{width:100%;border-collapse:collapse}th{background:#f6f8fb;color:var(--mut);text-align:left;font-weight:600}th,td{padding:8px 10px;border-bottom:1px solid #e7ecf2;vertical-align:top}
+tr.ck{cursor:pointer}tr.ck:hover{background:#eef5ff}
+.t{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin:1px;white-space:nowrap}
+.ch{background:#e7eefa;color:#2a4e8f}.ok{background:#daf1e4;color:var(--g)}.wa{background:#fff0c7;color:var(--a)}.bad{background:#fbe0e0;color:var(--r)}.fp{background:#ebedf0;color:#555}.pu{background:#ebe4fb;color:var(--p)}
+.note{background:#fffbe6;border:1px solid #efdf9f;border-radius:6px;padding:8px 11px;font-size:12px;margin-bottom:14px}
+.page{display:none}.page.on{display:block}
+/* scenario cards */
+.sc{background:#fff;border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:7px;border-top:4px solid var(--gr)}
+.sc.Genuine{border-top-color:var(--g)}.sc.Raise{border-top-color:var(--r)}.sc.Monitor{border-top-color:var(--a)}.sc.False{border-top-color:var(--gr)}
+.sc .id{font-weight:700;color:var(--mut);font-size:12px}.sc b.tt{font-size:14px}.sc .row{font-size:12px}.sc .row span.k{color:var(--mut);display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.sc .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px dashed var(--line)}
+/* pipeline */
+.pipe{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap}.stg{flex:1;min-width:120px;border:1px solid var(--line);border-radius:8px;padding:10px;background:#fafbfd;text-align:center;transition:.3s}
+.stg strong{display:block;font-size:22px}.stg .sub{font-size:11px}.stg.act{background:#e7f0ff;border-color:var(--blue)}.stg.done{background:#fff;border-color:#9fc0f0}.arr{align-self:center;color:#9aa6b6}
+.col{border:1px solid var(--line);border-radius:8px;padding:11px;background:#fff}.col b{display:block}.col .st{margin-top:7px;font-size:12px}
+/* graph */
+.graphwrap{overflow-x:auto;background:#fbfcfe;border:1px solid var(--line);border-radius:8px}
+.node rect{fill:#fff;stroke:#9fb3cc;stroke-width:1.2;rx:8}.node text{font-size:11px;fill:#1a2537}.node .chl{font-weight:700;font-size:10px}
+.edge{stroke:#2f6fdb;stroke-width:2;fill:none}.elbl rect{fill:#2f6fdb;rx:4}.elbl text{fill:#fff;font-size:10.5px;font-weight:600}
+.ekey{font-size:10.5px;fill:#2a4e8f}
+/* bars */
+.f{display:grid;grid-template-columns:170px 1fr 52px;gap:8px;align-items:center;margin:5px 0 0}.bar{height:8px;background:#e7ecf2;border-radius:6px;overflow:hidden}.bar i{display:block;height:100%}
+.why{font-size:11.5px;color:var(--mut);margin:1px 0 7px 0;padding-left:2px}
+.rule{font-family:Consolas,monospace;font-size:12px;padding:6px 9px;border-radius:5px;margin:4px 0;background:#f3f5f8;color:#8a94a3}.rule.fire{background:#e3edff;color:#1c4ea6;font-weight:700}
+.dec{display:block;font-size:15px;font-weight:700;padding:9px 12px;border-radius:7px;margin-bottom:8px}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:5px 8px;margin:0}.kv dt{color:var(--mut)}.kv dd{margin:0}
+.steps{display:flex;gap:6px;margin:8px 0 14px}.steps span{flex:1;text-align:center;padding:7px;border-radius:5px;background:#e9edf2;font-size:12px}.steps span.on{background:var(--blue);color:#fff}
+.flt{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}.flt button{border:1px solid var(--line);background:#fff;border-radius:14px;padding:4px 11px;cursor:pointer;font-size:12px}.flt button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.storybox{background:#f6f9ff;border:1px solid #d5e3fb;border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.mapsig{cursor:pointer}.mapsig:hover rect{stroke:var(--blue);stroke-width:2}
+.guard{border:1px dashed var(--a);background:#fffaf0;border-radius:8px;padding:10px 12px;font-size:12px}
+.tag2{font-size:11px;color:var(--mut)}
+@media(max-width:1100px){.c3,.c4{grid-template-columns:1fr 1fr}.c2{grid-template-columns:1fr}}
+</style></head><body>
+
+<div class="side">
+<h2>Shadow AI Discovery</h2><small>Prototype wireframe v2 · AVD demo</small>
+<div class="lbl">Demo</div>
+<button data-p="scen" class="on">① Demo scenarios</button>
+<button data-p="run">② Run discovery</button>
+<div class="lbl">Results</div>
+<button data-p="map">③ Clue map</button>
+<button data-p="signals">④ AI signals</button>
+<button data-p="cands">⑤ AI usage candidates</button>
+<button data-p="issues">⑥ Issues</button>
+<div class="lbl">How it decides</div>
+<button data-p="rules">⑦ Rules & reference</button>
+</div>
+
+<div class="main">
+<div class="note">Wireframe with fictional demo data, aligned to <b>Codex Prompt v2</b>. Suggested path: <b>Demo scenarios → Run discovery → Clue map → open a candidate</b> (to see how the clues are linked and scored) <b>→ Issue</b>. Finish with <b>Simulate live activity (S7)</b>.</div>
+
+<!-- ============ SCENARIOS ============ -->
+<section id="scen" class="page on">
+<div class="hd"><div><h1>Demo scenarios</h1><div class="sub">AI activity we deliberately plant in the mini-bank. The engine is not told about these. It must find each one from the traces it leaves behind.</div></div>
+<button class="btn" onclick="show('run')">Go to Run discovery →</button></div>
+<div class="g c4" id="scgrid"></div>
+<div class="card"><h3>What the audience should take away</h3>
+<div class="g c4">
+<div><b>1. It finds AI on its own</b><div class="sub">From code, keys, computers, agents, internet traffic and data movement</div></div>
+<div><b>2. It links the clues</b><div class="sub">Clues that share a repo, key, user + website or server become one case</div></div>
+<div><b>3. It tells good from risky</b><div class="sub">Approved use stays quiet. Shadow and risky use is raised</div></div>
+<div><b>4. It explains every decision</b><div class="sub">Evidence, points per factor and the rule that fired</div></div>
+</div></div>
+</section>
+
+<!-- ============ RUN ============ -->
+<section id="run" class="page">
+<div class="hd"><div><h1>Run discovery</h1><div class="sub">Scans C:\ShadowAI-Demo only. Collect → Detect → Correlate → Reconcile → Score → Decide</div></div>
+<div><button class="btn live" onclick="live()">⚡ Simulate live activity (S7)</button> <button class="btn" onclick="runScan()">▶ Run discovery</button></div></div>
+<div class="card"><h3>Collectors <span class="sub" id="runinfo">· not run yet</span></h3><div class="g c4" id="collectors"></div></div>
+<div class="card"><h3>Pipeline</h3>
+<div class="pipe" id="pipe"></div>
+<div id="decsum" style="margin-top:12px"></div></div>
+<div class="card" id="runlog" style="display:none"><h3>What just happened</h3><div id="runlogtxt" class="sub"></div></div>
+</section>
+
+<!-- ============ CLUE MAP ============ -->
+<section id="map" class="page">
+<div class="hd"><div><h1>Clue map</h1><div class="sub">Every AI signal (left) and the AI usage candidate it was linked into (right). Lines show which clues were joined together. Click a candidate to open it.</div></div></div>
+<div id="mapbody"></div>
+</section>
+
+<!-- ============ SIGNALS ============ -->
+<section id="signals" class="page">
+<div class="hd"><div><h1>AI signals</h1><div class="sub">Items that matched the AI signature catalogue. One signal alone is only a hint.</div></div></div>
+<div class="flt" id="sflt"></div>
+<div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>ID</th><th>Channel</th><th>Signal type</th><th>What was detected</th><th>Entity</th><th>User / device</th><th>Provider</th><th>Source</th><th>Candidate</th></tr></thead><tbody id="stb"></tbody></table></div>
+</section>
+
+<!-- ============ CANDIDATES ============ -->
+<section id="cands" class="page">
+<div class="hd"><div><h1>AI usage candidates</h1><div class="sub">Groups of linked signals. Each candidate is one suspected AI usage.</div></div></div>
+<div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>ID</th><th>Scenario</th><th>AI usage</th><th>Clues linked</th><th>Channels</th><th>Inventory</th><th>Confidence</th><th>Risk</th><th>Decision</th></tr></thead><tbody id="ctb"></tbody></table></div>
+</section>
+
+<section id="cdet" class="page"></section>
+
+<!-- ============ ISSUES ============ -->
+<section id="issues" class="page">
+<div class="hd"><div><h1>Issues</h1><div class="sub">AI usage raised for investigation (decision rule R3, or raised manually)</div></div></div>
+<div class="card" style="padding:0;overflow:auto"><table><thead><tr><th>Issue</th><th>Title</th><th>Candidate</th><th>Confidence</th><th>Risk</th><th>Suggested owner</th><th>Status</th></tr></thead><tbody id="itb"></tbody></table></div>
+</section>
+<section id="idet" class="page"></section>
+
+<!-- ============ RULES ============ -->
+<section id="rules" class="page">
+<div class="hd"><div><h1>Rules & reference</h1><div class="sub">The fixed logic the engine uses. Thresholds and weights are configurable.</div></div></div>
+<div class="g c2">
+<div class="card"><h3>How clues are linked (join rules)</h3><table><tr><th>Rule</th><th>Links two clues when…</th><th>Used in</th></tr>
+<tr><td><b>J1</b></td><td>Same repo/app name <b>and</b> same AI provider</td><td>S1, S2</td></tr>
+<tr><td><b>J2</b></td><td>Same credential fingerprint</td><td>(key reuse)</td></tr>
+<tr><td><b>J3</b></td><td>Repo's service account/author = proxy user <b>and</b> same provider</td><td>S2, S7</td></tr>
+<tr><td><b>J4</b></td><td>Network + DLP: same user, same website, within ±2 minutes</td><td>S3, S7</td></tr>
+<tr><td><b>J5</b></td><td>Same device and same AI runtime (process ↔ port ↔ model file)</td><td>S4</td></tr>
+<tr><td><b>J6</b></td><td>MCP config server ↔ running server ↔ tool-call audit</td><td>S5</td></tr></table>
+<div class="guard" style="margin-top:10px"><b>Over-merge guard:</b> the same user, device or provider <b>alone</b> never links clues. That is why Ahmed's local model (S4), agent (S5) and Anthropic use (S7) stay three separate cases.</div></div>
+<div class="card"><h3>Decision rules (first match wins)</h3>
+<div class="rule">R1 · confidence &lt; 40 → FALSE POSITIVE</div><div class="rule">R2 · Approved AND confidence ≥ 70 → GENUINE</div><div class="rule">R3 · not Approved AND risk ≥ 70 → RAISE ISSUE</div><div class="rule">R4 · otherwise → MONITOR</div>
+<h3 style="margin-top:14px">Confidence: how sure is it real AI usage? (100)</h3>
+<table><tr><td>Direct evidence (30)</td><td class="sub">Runtime activity 30 · MCP server/credential 25 · SDK 15 · model file 10 · doc mention 5</td></tr>
+<tr><td>Identity link (20)</td><td class="sub">Direct from evidence 20 · via repo register 10</td></tr>
+<tr><td>Technology correlation (20)</td><td class="sub">Signal types: ≥3 → 20 · 2 → 15 · 1 → 5</td></tr>
+<tr><td>Recurrence (15)</td><td class="sub">Events: ≥10 → 15 · 2–9 → 10 · 1 → 0</td></tr>
+<tr><td>Independent channels (15)</td><td class="sub">≥3 → 15 · 2 → 10 · 1 → 0</td></tr></table>
+<h3 style="margin-top:14px">Risk: how harmful could it be? (100)</h3>
+<table><tr><td>Data sensitivity (25)</td><td class="sub">Customer PII 25 · Confidential 20 · exposed key 15</td></tr>
+<tr><td>External exposure (15)</td><td class="sub">Direct external 15 · via gateway 5 · local 0</td></tr>
+<tr><td>Autonomy / permissions (20)</td><td class="sub">Write-capable agent 20 · programmatic/read 10 · human/local 5</td></tr>
+<tr><td>Business criticality (15)</td><td class="sub">High 15 · Medium 10 · Low 5 · unknown 8</td></tr>
+<tr><td>Regulatory / customer (15)</td><td class="sub">PII or write to customer store 15 · Confidential / customer-data app 10</td></tr>
+<tr><td>Control weakness (10)</td><td class="sub">+5 not approved · +5 bypass/plaintext key/no owner</td></tr></table></div>
+<div class="card"><h3>Approved AI inventory</h3><table><tr><th>ID</th><th>Asset</th><th>Match</th><th>Route</th><th>Status</th></tr>
+<tr><td>AI-INV-1022</td><td>Credit Dossier GenAI</td><td>app = credit-dossier</td><td>gateway</td><td><span class="t ok">Approved</span></td></tr>
+<tr><td>AI-INV-1001</td><td>Microsoft 365 Copilot</td><td>host = copilot.microsoft.com</td><td>any</td><td><span class="t ok">Approved</span></td></tr>
+<tr><td>AI-INV-1030</td><td>Public ChatGPT</td><td>host = chatgpt.com</td><td>n/a</td><td><span class="t bad">Restricted</span></td></tr></table>
+<div class="sub" style="margin-top:6px">loan-ops-helper, risk-agent and local runtimes are deliberately absent.</div></div>
+<div class="card"><h3>Repo register and CMDB</h3><table><tr><th>Repo / CI</th><th>Owner</th><th>Service account</th><th>Criticality</th><th>Customer data</th></tr>
+<tr><td>credit-dossier</td><td>Credit Technology</td><td>app-svc</td><td>High</td><td>yes</td></tr>
+<tr><td>loan-ops-helper</td><td>Ravi Menon</td><td>dev-svc</td><td>High</td><td>yes</td></tr>
+<tr><td>readme-only</td><td>Sanjay Iyer</td><td>dev-svc</td><td>Low</td><td>no</td></tr>
+<tr><td>treasury-reports</td><td>Treasury IT</td><td>app-svc</td><td>Medium</td><td>no</td></tr>
+<tr><td>creditdb (CMDB)</td><td>Credit Data Platform</td><td>–</td><td>High</td><td>yes</td></tr></table></div>
+<div class="card"><h3>Demo identities</h3><table><tr><th>User</th><th>Department</th><th>Device</th></tr>
+<tr><td>app-svc</td><td>Credit Technology</td><td>AVD-APP-01</td></tr><tr><td>gateway-svc</td><td>Enterprise AI Platform</td><td>–</td></tr><tr><td>dev-svc</td><td>Lending Technology</td><td>AVD-DEV-02</td></tr><tr><td>priya</td><td>Retail Lending (High)</td><td>AVD-RL-07</td></tr><tr><td>ahmed</td><td>Risk Analytics (Medium)</td><td>AVD-ANL-03</td></tr></table></div>
+<div class="card"><h3>AI signature catalogue (extract)</h3><table>
+<tr><td>Websites</td><td class="sub">api.openai.com, chatgpt.com, api.anthropic.com, api.mistral.ai, gemini.google.com</td></tr>
+<tr><td>Libraries</td><td class="sub">openai, anthropic, mistralai, langchain, ollama</td></tr>
+<tr><td>Key shapes</td><td class="sub">sk-…, sk-proj-…, sk-ant-…</td></tr>
+<tr><td>Programs / ports</td><td class="sub">ollama : 11434, lmstudio : 1234</td></tr>
+<tr><td>Model files</td><td class="sub">.gguf, .safetensors, .onnx, Ollama blobs</td></tr>
+<tr><td>Agent configs</td><td class="sub">mcp.json, claude_desktop_config.json</td></tr></table></div>
+</div>
+</section>
+</div>
+
+<script>
+/* ---------------- DATA (aligned to Codex Prompt v2) ---------------- */
+const CF=["Direct evidence","Identity link","Technology correlation","Recurrence","Independent channels"],CW=[30,20,20,15,15];
+const RF=["Data sensitivity","External exposure","Autonomy / permissions","Business criticality","Regulatory / customer impact","Control weakness"],RW=[25,15,20,15,15,10];
+const RULES=["R1 · confidence < 40 → FALSE POSITIVE","R2 · Approved AND confidence ≥ 70 → GENUINE","R3 · not Approved AND risk ≥ 70 → RAISE ISSUE","R4 · otherwise → MONITOR"];
+const SIG={
+"SIG-01":["Code","sdk_dependency","mistralai in requirements.txt","credit-dossier","app-svc (register)","Mistral","repos\\credit-dossier\\requirements.txt"],
+"SIG-02":["Code","sdk_import","from mistralai import … (dossier/llm.py)","credit-dossier","app-svc (register)","Mistral","repos\\credit-dossier\\dossier\\llm.py"],
+"SIG-03":["Gateway","gateway_call","20 calls via approved gateway, x-app-id = credit-dossier","credit-dossier","app-svc / AVD-APP-01","Mistral","logs\\gateway.jsonl"],
+"SIG-04":["Network","ai_network_call","20 calls to api.mistral.ai by gateway-svc (via_gateway)","credit-dossier","gateway-svc","Mistral","logs\\proxy.jsonl"],
+"SIG-05":["Code","sdk_dependency","openai in requirements.txt","loan-ops-helper","dev-svc (register)","OpenAI","repos\\loan-ops-helper\\requirements.txt"],
+"SIG-06":["Code","sdk_import","from openai import OpenAI (helper/summarise.py)","loan-ops-helper","dev-svc (register)","OpenAI","repos\\loan-ops-helper\\helper\\summarise.py"],
+"SIG-07":["Secret","credential_in_history","OpenAI-format key in .env, commit 3f2d1a (deleted later) · fp 7c1e…a90b","loan-ops-helper","dev-svc (register)","OpenAI","git history"],
+"SIG-08":["Network","ai_network_call","12 direct calls to api.openai.com (401, bypassed gateway)","dev-svc","dev-svc / AVD-DEV-02","OpenAI","logs\\proxy.jsonl"],
+"SIG-09":["Network","ai_network_call","1 upload to chatgpt.com, 2.4 MB (blocked 403)","priya","priya / AVD-RL-07","OpenAI","logs\\proxy.jsonl"],
+"SIG-10":["DLP","dlp_label","Label: Customer PII · 14 matches · same upload","priya","priya / AVD-RL-07","OpenAI","logs\\dlp.jsonl"],
+"SIG-11":["Endpoint","ai_process","ollama.exe running","AVD-ANL-03","ahmed / AVD-ANL-03","Ollama (local)","process list"],
+"SIG-12":["Endpoint","ai_port","Port 11434 listening (Ollama)","AVD-ANL-03","ahmed / AVD-ANL-03","Ollama (local)","listening ports"],
+"SIG-13":["Endpoint","model_file","Model blob qwen2.5:0.5b (0.4 GB)","AVD-ANL-03","ahmed / AVD-ANL-03","Ollama (local)","endpoint\\models"],
+"SIG-14":["MCP","mcp_config_server","mcp.json: server creditdb → 127.0.0.1:8765","risk-agent","ahmed / AVD-ANL-03","MCP","endpoint\\ahmed\\.vscode\\mcp.json"],
+"SIG-15":["MCP","mcp_server_running","Server on :8765 · tools: query_loans (read), execute_sql (WRITE)","creditdb MCP","ahmed / AVD-ANL-03","MCP","tools/list"],
+"SIG-16":["MCP","mcp_tool_calls","2 tool calls by risk-agent incl. execute_sql","creditdb MCP","risk-agent","MCP","logs\\mcp_audit.jsonl"],
+"SIG-17":["Code","doc_mention","\"OpenAI\" mentioned in README.md only","readme-only","dev-svc (register)","OpenAI","repos\\readme-only\\README.md"],
+"SIG-18":["Code","sdk_import","import anthropic (ahmed-scratch/test_claude.py)","ahmed-scratch","ahmed (commit author)","Anthropic","repos\\ahmed-scratch"],
+"SIG-19":["Network","ai_network_call","5 calls to api.anthropic.com","ahmed","ahmed / AVD-ANL-03","Anthropic","logs\\proxy.jsonl"],
+"SIG-20":["DLP","dlp_label","Label: Confidential · 1 match (blocked 403)","ahmed","ahmed / AVD-ANL-03","Anthropic","logs\\dlp.jsonl"]};
+
+const SC=[
+{id:"C-001",sc:"S1",short:"Approved Credit Dossier",name:"credit-dossier → Mistral (via gateway)",
+ story:"Credit Dossier uses Mistral through the bank's approved AI gateway. Key held in gateway config, not in code.",
+ plant:"credit-dossier repo with mistralai · LiteLLM gateway · script makes ~20 calls via gateway",
+ sigs:["SIG-01","SIG-02","SIG-03","SIG-04"],
+ edges:[["SIG-01","SIG-02","J1","same repo credit-dossier + Mistral"],["SIG-02","SIG-03","J1","app credit-dossier + Mistral"],["SIG-03","SIG-04","J1","gateway egress attributed to credit-dossier"]],
+ inv:["ok","Approved · AI-INV-1022","Entity credit-dossier matches inventory, provider Mistral matches, required route 'gateway' satisfied (SIG-03, SIG-04 via_gateway)"],
+ conf:[[30,"Runtime activity: 20 gateway calls (SIG-03)"],[20,"Service account app-svc taken from gateway evidence"],[20,"4 signal types (≥3)"],[15,"20 events (≥10)"],[15,"3 channels: Code, Gateway, Network"]],
+ risk:[[0,"No DLP label, no exposed credential"],[5,"External AI reached only via approved gateway"],[10,"Programmatic use by a service account"],[15,"CMDB credit-dossier: High"],[10,"Application handles customer data"],[0,"Approved, uses gateway, owner registered"]],
+ rule:1,owner:"Credit Technology",act:"No action. Close as genuine approved usage.",point:"Recognises approved AI used the right way and stays quiet."},
+{id:"C-002",sc:"S2",short:"Developer shortcut",name:"loan-ops-helper → OpenAI (direct)",
+ story:"A developer's helper tool calls OpenAI directly, bypassing the gateway. The key was committed and later deleted.",
+ plant:"loan-ops-helper repo with openai · DEMO key in git history · script calls api.openai.com as dev-svc",
+ sigs:["SIG-05","SIG-06","SIG-07","SIG-08"],
+ edges:[["SIG-05","SIG-06","J1","same repo loan-ops-helper + OpenAI"],["SIG-06","SIG-07","J1","same repo loan-ops-helper + OpenAI"],["SIG-07","SIG-08","J3","repo service account dev-svc = proxy user + OpenAI"]],
+ inv:["wa","Unknown · no inventory or CMDB record","No inventory row for loan-ops-helper. Traffic bypasses the approved gateway."],
+ conf:[[30,"Runtime activity: 12 direct API calls (SIG-08)"],[20,"dev-svc taken directly from proxy evidence"],[20,"4 signal types (≥3)"],[15,"12 events (≥10)"],[15,"3 channels: Code, Secret, Network"]],
+ risk:[[15,"Plaintext key exposed in git history"],[15,"Direct calls to external AI host"],[10,"Programmatic use by service account"],[15,"Repo register: High"],[10,"Repo handles customer data"],[10,"Not approved (+5) · bypasses gateway, plaintext key (+5)"]],
+ rule:2,owner:"Ravi Menon (repo owner)",title:"Unregistered OpenAI API use with exposed key",act:"Revoke and rotate the key, purge it from history, stop direct calls, and either register the use case via the gateway or retire the tool.",point:"Three independent clues give near-certainty; also catches a leaked key."},
+{id:"C-003",sc:"S3",short:"Customer data to ChatGPT",name:"priya → chatgpt.com with Customer PII",
+ story:"Priya uploads a customer extract to public ChatGPT, which is a restricted service. DLP blocks the upload.",
+ plant:"Dummy customer file (14 fake account numbers) · script uploads as priya · DLP add-on flags and blocks",
+ sigs:["SIG-09","SIG-10"],
+ edges:[["SIG-09","SIG-10","J4","same user priya + chatgpt.com, 0 s apart"]],
+ inv:["bad","Restricted · AI-INV-1030","Host chatgpt.com matches inventory row 'Public ChatGPT' with status Restricted."],
+ conf:[[30,"Runtime activity: upload observed (SIG-09)"],[20,"priya taken directly from proxy and DLP evidence"],[15,"2 signal types"],[10,"2 events"],[10,"2 channels: Network, DLP"]],
+ risk:[[25,"DLP label Customer PII (14 matches)"],[15,"Direct upload to external public AI"],[5,"Interactive human use"],[15,"User department Retail Lending: High"],[15,"Customer PII involved"],[10,"Restricted service (+5) · outside approved route (+5)"]],
+ rule:2,owner:"Retail Lending – line manager",title:"Customer PII uploaded to public ChatGPT (blocked)",act:"Validate the DLP event, assess incident-reporting obligations, and move the user to an approved enterprise AI tool.",point:"Linking a website visit to a DLP alert turns a medium concern into a serious issue."},
+{id:"C-004",sc:"S4",short:"Local AI model",name:"ahmed's desktop → Ollama (local)",
+ story:"Ahmed runs a free AI model on his own desktop. Nothing leaves the machine, but it is not registered.",
+ plant:"Ollama installed · qwen2.5:0.5b in demo folder · one local prompt, no internet traffic",
+ sigs:["SIG-11","SIG-12","SIG-13"],
+ edges:[["SIG-11","SIG-12","J5","same device + Ollama runtime"],["SIG-12","SIG-13","J5","same device + Ollama model store"]],
+ inv:["wa","Unknown · not registered","No inventory entry for local runtimes on this device."],
+ conf:[[30,"Runtime activity: ollama process running (SIG-11)"],[20,"ahmed from endpoint profile of AVD-ANL-03"],[20,"3 signal types (≥3)"],[10,"3 observations"],[0,"1 channel only: Endpoint"]],
+ risk:[[0,"No data movement observed"],[0,"Local only, no external traffic"],[5,"Local runtime"],[10,"User department Risk Analytics: Medium"],[0,"No customer data observed"],[10,"Not approved (+5) · no registered owner (+5)"]],
+ rule:3,owner:"Risk Analytics",act:"Ask the user to register the use case. Keep monitoring for data movement or network exposure.",point:"Certain it is AI, but low risk, so it responds proportionately."},
+{id:"C-005",sc:"S5",short:"Agent with write access",name:"risk-agent → creditdb via MCP (WRITE)",
+ story:"An unapproved AI agent is connected to the credit database through an MCP server that allows changing data.",
+ plant:"creditdb (Postgres) · our MCP server with read + write tools · mcp.json · agent script runs 2 tool calls",
+ sigs:["SIG-14","SIG-15","SIG-16"],
+ edges:[["SIG-14","SIG-15","J6","config URL :8765 = running server"],["SIG-15","SIG-16","J6","server creditdb = audit server name"]],
+ inv:["wa","Unknown · no inventory record","No inventory entry for risk-agent. Target creditdb found in CMDB (High, Confidential, customer data)."],
+ conf:[[25,"MCP server running and tools listed (SIG-15)"],[20,"ahmed from config location / endpoint profile"],[20,"3 signal types (≥3)"],[10,"2 tool calls"],[0,"1 channel only: MCP"]],
+ risk:[[20,"Target creditdb is Confidential"],[0,"No external traffic"],[20,"Write/destructive tool exposed (execute_sql)"],[15,"CMDB creditdb: High"],[15,"Write access to a store holding customer data"],[10,"Not approved (+5) · no registered owner (+5)"]],
+ rule:2,owner:"Credit Data Platform",title:"Unregistered agent with write access to creditdb",act:"Remove write permission immediately, identify the agent owner, and complete an agent risk assessment before re-enabling.",point:"Covers the newest risk: AI acting on bank systems."},
+{id:"C-006",sc:"S6",short:"False alarm",name:"readme-only → 'OpenAI' mention",
+ story:"A README mentions OpenAI as a future idea. There is no AI code, key or traffic.",
+ plant:"readme-only repo (README sentence only) · treasury-reports control repo with no AI",
+ sigs:["SIG-17"],edges:[],
+ inv:["fp","No match",""],
+ conf:[[5,"Documentation mention only"],[10,"Owner known only via repo register"],[5,"1 signal type"],[0,"1 event"],[0,"1 channel"]],
+ risk:[[0,"None"],[0,"None"],[0,"No runtime evidence"],[5,"Repo register: Low"],[0,"None"],[5,"Not approved (+5)"]],
+ rule:0,owner:"–",act:"Auto-closed. No action.",point:"Filters noise that a keyword search would wrongly flag."}];
+const S7C={id:"C-007",sc:"S7",short:"Live activity",name:"ahmed → Anthropic (live)",live:true,
+ story:"During the demo, Ahmed runs a new script calling Anthropic, including a Confidential document, which DLP blocks.",
+ plant:"s7_live.py creates ahmed-scratch repo, commits test_claude.py and calls api.anthropic.com 5 times",
+ sigs:["SIG-18","SIG-19","SIG-20"],
+ edges:[["SIG-18","SIG-19","J3","commit author ahmed = proxy user + Anthropic"],["SIG-19","SIG-20","J4","same user ahmed + api.anthropic.com, within 2 min"]],
+ inv:["wa","Unknown · no inventory record","No inventory entry for Anthropic use by this user or repo."],
+ conf:[[30,"Runtime activity: 5 API calls (SIG-19)"],[20,"ahmed taken directly from proxy evidence"],[20,"3 signal types (≥3)"],[10,"5 events"],[15,"3 channels: Code, Network, DLP"]],
+ risk:[[20,"DLP label Confidential"],[15,"Direct calls to external AI host"],[10,"Programmatic use (script)"],[10,"User department Risk Analytics: Medium"],[10,"Confidential data involved"],[10,"Not approved (+5) · bypasses gateway (+5)"]],
+ rule:2,owner:"Risk Analytics",title:"New unregistered Anthropic API use with Confidential data",act:"Confirm the purpose with the user, route the use case through the approved gateway or stop it.",point:"Proves detection is live, not pre-loaded."};
+
+const COL=[["Code & dependencies","4 repos · 96 files",96,1],["API keys & secrets","files + 13 commits",109,1],["Endpoint & local models","processes, ports, endpoint\\",220,0],["Agents & MCP","configs, servers, audit",5,0],["Network / proxy","logs\\proxy.jsonl",233,5],["DLP (proxy add-on)","logs\\dlp.jsonl",1,1],["AI gateway","logs\\gateway.jsonl",20,0]];
+const DEC=["False positive","Genuine","Raise issue","Monitor"],DT={"Genuine":"ok","Raise issue":"bad","Monitor":"wa","False positive":"fp"};
+let ran=false,liveDone=false,liveRan=false,ISS=[],sigF="All";
+const sum=a=>a.reduce((x,y)=>x+y[0],0);
+const cands=()=>SC.concat(liveRan?[S7C]:[]);
+const cand=id=>cands().find(c=>c.id===id)||(id==="C-007"?S7C:null);
+const dec=c=>DEC[c.rule];
+const chans=c=>[...new Set(c.sigs.map(s=>SIG[s][0]))];
+
+/* ---------------- NAV ---------------- */
+function show(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));document.getElementById(p).classList.add('on');
+ const map={cdet:'cands',idet:'issues'};document.querySelectorAll('.side button').forEach(b=>b.classList.toggle('on',b.dataset.p===(map[p]||p)));scrollTo(0,0)}
+document.querySelectorAll('.side button').forEach(b=>b.onclick=()=>{if(['map','signals','cands','issues'].includes(b.dataset.p)&&!ran){alert('Run discovery first.');show('run');return}show(b.dataset.p)});
+
+/* ---------------- SCENARIOS ---------------- */
+function drawScen(){const all=SC.concat([S7C]);document.getElementById('scgrid').innerHTML=all.map(c=>{const d=dec(c);const shown=c.live?liveRan:ran;
+return `<div class="sc ${d.split(' ')[0]}"><div class="id">${c.sc}${c.live?' · LIVE MOMENT':''}</div><b class="tt">${c.short}</b>
+<div class="row"><span class="k">Story</span>${c.story}</div>
+<div class="row"><span class="k">What we plant</span>${c.plant}</div>
+<div class="row"><span class="k">Clues expected</span>${chans(c).map(x=>`<span class="t ch">${x}</span>`).join('')} <span class="tag2">${c.sigs.length} signals</span></div>
+<div class="row"><span class="k">Proves</span>${c.point}</div>
+<div class="foot"><span>Expected: <span class="t ${DT[d]}">${d}</span></span>${shown?`<a onclick="openC('${c.id}')">See result →</a>`:`<span class="tag2">${c.live?'run live':'not run'}</span>`}</div></div>`}).join('')}
+
+/* ---------------- RUN ---------------- */
+const STG=[["Collect","items scanned"],["Detect","AI signals"],["Correlate","candidates"],["Reconcile","inventory checked"],["Score","confidence + risk"],["Decide","issues raised"]];
+function stageVals(){const cs=cands(),sg=cs.reduce((n,c)=>n+c.sigs.length,0),it=COL.reduce((n,c)=>n+c[2]+(liveRan?c[3]:0),0);
+ return [it.toLocaleString(),sg,cs.length,cs.length,cs.length,ISS.length]}
+function drawPipe(active){const v=ran?stageVals():STG.map(()=>'–');document.getElementById('pipe').innerHTML=STG.map((s,i)=>`${i?'<span class="arr">→</span>':''}<div class="stg ${active===i?'act':active>i||active===99?'done':''}"><div class="sub">${i+1}. ${s[0]}</div><strong>${active===99||active>i?v[i]:'–'}</strong><div class="sub">${s[1]}</div></div>`).join('')}
+function drawCollectors(st){document.getElementById('collectors').innerHTML=COL.map(c=>`<div class="col"><b>${c[0]}</b><span class="sub">${c[1]}</span><div class="st">${st==='idle'?'<span class="t fp">Ready</span>':st==='run'?'<span class="t wa">Scanning…</span>':`<span class="t ok">Done</span> ${c[2]+(liveRan?c[3]:0)} items`}</div></div>`).join('')}
+function runScan(){if(liveDone)liveRan=true;drawCollectors('run');let i=0;
+ ISS=[];cands().forEach(c=>{if(dec(c)==='Raise issue')ISS.push({id:'ISS-00'+(ISS.length+1),c:c.id,st:0,isNew:!!c.live})});
+ ran=true;const tick=()=>{drawPipe(i);if(i===0)drawCollectors('done');i++;if(i<STG.length)setTimeout(tick,450);else{drawPipe(99);renderAll();}};setTimeout(tick,500)}
+function live(){if(liveDone){alert('S7 already simulated. Click Run discovery.');return}if(!ran){alert('Run the baseline discovery first, so the audience sees 6 candidates and 3 issues.');return}
+ liveDone=true;alert('S7 executed on the AVD:\n• ahmed-scratch repo created with test_claude.py (imports anthropic)\n• 5 calls to api.anthropic.com as ahmed via the proxy\n• 1 request containing CONFIDENTIAL-INTERNAL, flagged and blocked by DLP\n\nNow click "Run discovery".')}
+function renderAll(){const cs=cands(),cnt={};cs.forEach(c=>cnt[dec(c)]=(cnt[dec(c)]||0)+1);
+ document.getElementById('runinfo').textContent='· last run just now'+(liveRan?' · includes S7 live activity':' · baseline S1–S6');
+ document.getElementById('decsum').innerHTML='Decisions: '+Object.entries(cnt).map(([d,n])=>`<span class="t ${DT[d]}">${d}: ${n}</span>`).join(' ')+' &nbsp; <a onclick="show(\'map\')">See how clues were linked →</a>';
+ document.getElementById('runlog').style.display='block';
+ document.getElementById('runlogtxt').innerHTML=`Collectors read ${stageVals()[0]} items. ${stageVals()[1]} matched the AI signature catalogue and became signals. Join rules linked them into ${cs.length} candidates (treasury-reports produced no signal). Each candidate was checked against the approved inventory, scored, and decided. ${ISS.length} issues were raised${liveRan?', including 1 NEW from the live activity':''}.`;
+ drawScen();drawMap();drawSignals();drawCands();drawIssues()}
+
+/* ---------------- CLUE MAP ---------------- */
+function drawMap(){const cs=cands();let y=20,rows=[],cy=[];const RH=34,GAP=18;
+ cs.forEach(c=>{const top=y;c.sigs.forEach(s=>{rows.push([s,y,c]);y+=RH});cy.push([c,(top+y-RH)/2]);y+=GAP});
+ const H=y+10,W=1060,SX=20,SW=420,CX=700,CW=340;
+ let svg=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+ rows.forEach(([s,ry,c])=>{const t=cy.find(x=>x[0]===c)[1];const col={'Genuine':'#1f8a57','Raise issue':'#c03838','Monitor':'#a87400','False positive':'#9aa4b2'}[dec(c)];
+  svg+=`<path d="M${SX+SW} ${ry+13} C ${SX+SW+130} ${ry+13}, ${CX-130} ${t+13}, ${CX} ${t+13}" stroke="${col}" stroke-width="1.8" fill="none" opacity=".75"/>`});
+ rows.forEach(([s,ry])=>{const d=SIG[s];svg+=`<g class="mapsig" onclick="openC('${rows.find(r=>r[0]===s)[2].id}')"><rect x="${SX}" y="${ry}" width="${SW}" height="26" rx="6" fill="#fff" stroke="#c7d3e3"/><text x="${SX+8}" y="${ry+17}" font-size="11"><tspan font-weight="700" fill="#2a4e8f">${d[0]}</tspan><tspan fill="#65728a"> · ${s} · </tspan><tspan>${esc(trunc(d[2],48))}</tspan></text></g>`});
+ cy.forEach(([c,t])=>{const d=dec(c),col={'Genuine':'#daf1e4','Raise issue':'#fbe0e0','Monitor':'#fff0c7','False positive':'#ebedf0'}[d];
+  svg+=`<g style="cursor:pointer" onclick="openC('${c.id}')"><rect x="${CX}" y="${t-6}" width="${CW}" height="38" rx="8" fill="${col}" stroke="#c7d3e3"/><text x="${CX+10}" y="${t+9}" font-size="11.5" font-weight="700">${c.id} · ${c.sc} ${c.live?'· NEW':''}</text><text x="${CX+10}" y="${t+24}" font-size="11">${esc(trunc(c.name,40))} → ${d}</text></g>`});
+ svg+=`<text x="${SX}" y="12" font-size="11" fill="#65728a" font-weight="700">AI SIGNALS (clues)</text><text x="${CX}" y="12" font-size="11" fill="#65728a" font-weight="700">AI USAGE CANDIDATES (linked cases)</text></svg>`;
+ document.getElementById('mapbody').innerHTML=`<div class="card graphwrap">${svg}</div>
+ <div class="g c3"><div class="card"><h3>Not linked: treasury-reports</h3><div class="sub">Scanned (code and secrets), but nothing matched the AI catalogue, so no signal and no candidate. This is the control.</div></div>
+ <div class="card"><h3>Standalone clue: S6</h3><div class="sub">The README mention has nothing to join with, so it stays a one-clue candidate with low confidence and is auto-closed.</div></div>
+ <div class="guard"><b>Why Ahmed has ${liveRan?'three':'two'} separate cases</b><br>S4 (local model), S5 (agent)${liveRan?' and S7 (Anthropic)':''} share the same user, but the user alone is not a join key. They share no repo, key, website or server, so they are not merged.</div></div>`}
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');const trunc=(s,n)=>s.length>n?s.slice(0,n-1)+'…':s;
+
+/* ---------------- SIGNALS / CANDIDATES / ISSUES ---------------- */
+function drawSignals(){const ids=cands().flatMap(c=>c.sigs.map(s=>[s,c.id]));const chs=["All",...new Set(ids.map(x=>SIG[x[0]][0]))];
+ document.getElementById('sflt').innerHTML=chs.map(c=>`<button class="${c===sigF?'on':''}" onclick="sigF='${c}';drawSignals()">${c}</button>`).join('');
+ document.getElementById('stb').innerHTML=ids.filter(x=>sigF==='All'||SIG[x[0]][0]===sigF).map(([s,c])=>{const d=SIG[s];return `<tr class="ck" onclick="openC('${c}')"><td>${s}</td><td><span class="t ch">${d[0]}</span></td><td class="sub">${d[1]}</td><td>${esc(d[2])}</td><td>${d[3]}</td><td>${d[4]}</td><td>${d[5]}</td><td class="sub">${d[6]}</td><td>${c}</td></tr>`}).join('')}
+function drawCands(){document.getElementById('ctb').innerHTML=cands().map(c=>{const C=sum(c.conf),R=sum(c.risk),d=dec(c);
+ return `<tr class="ck" onclick="openC('${c.id}')"><td><b>${c.id}</b></td><td>${c.sc} ${c.live?'<span class="t pu">NEW</span>':''}</td><td><b>${c.name}</b><div class="sub">${c.short}</div></td><td>${c.sigs.length} via ${[...new Set(c.edges.map(e=>e[2]))].join(', ')||'—'}</td><td>${chans(c).map(x=>`<span class="t ch">${x}</span>`).join('')}</td><td><span class="t ${c.inv[0]}">${c.inv[1].split(' ·')[0]}</span></td><td><b>${C}</b></td><td><b>${R}</b></td><td><span class="t ${DT[d]}">${d}</span></td></tr>`}).join('')}
+function drawIssues(){document.getElementById('itb').innerHTML=ISS.map(i=>{const c=cand(i.c);return `<tr class="ck" onclick="openI('${i.id}')"><td><b>${i.id}</b> ${i.isNew?'<span class="t pu">NEW</span>':''}</td><td>${c.title}</td><td>${c.id} (${c.sc})</td><td>${sum(c.conf)}</td><td><span class="t bad">${sum(c.risk)}</span></td><td>${c.owner}</td><td>${['Open','Investigating','Resolved'][i.st]}</td></tr>`}).join('')||'<tr><td colspan=7 class="sub">No issues.</td></tr>'}
+
+/* ---------------- LINK GRAPH ---------------- */
+function graph(c){const n=c.sigs.length,NW=200,NH=74,GX=90,W=Math.max(n*NW+(n-1)*GX+40,420),H=n>1?200:120,y=n>1?100:24;
+ const x=i=>20+i*(NW+GX);let s=`<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`;
+ c.edges.forEach(e=>{const a=c.sigs.indexOf(e[0]),b=c.sigs.indexOf(e[1]);const x1=x(a)+NW,x2=x(b),my=y+NH/2;
+  if(b===a+1){s+=`<line class="edge" x1="${x1}" y1="${my}" x2="${x2}" y2="${my}"/>`;const mx=(x1+x2)/2;
+   s+=`<g class="elbl"><rect x="${mx-16}" y="${my-11}" width="32" height="20"/><text x="${mx}" y="${my+4}" text-anchor="middle">${e[2]}</text></g>`;
+   s+=wrapText(e[3],mx,y-46,GX+NW*0.9)}});
+ c.sigs.forEach((id,i)=>{const d=SIG[id];s+=`<g class="node"><rect x="${x(i)}" y="${y}" width="${NW}" height="${NH}"/><text class="chl" x="${x(i)+10}" y="${y+16}" fill="#2a4e8f">${d[0].toUpperCase()} · ${id}</text>`;
+  const lines=wrap(d[2],32).slice(0,3);lines.forEach((l,k)=>s+=`<text x="${x(i)+10}" y="${y+32+k*13}">${esc(l)}</text>`);s+=`</g>`});
+ return s+`</svg>`}
+function wrap(t,n){const w=t.split(' '),out=[];let l='';w.forEach(x=>{if((l+' '+x).trim().length>n){out.push(l.trim());l=x}else l+=' '+x});if(l.trim())out.push(l.trim());return out}
+function wrapText(t,cx,y,width){const L=wrap(t,Math.floor(width/6.2));return L.map((l,k)=>`<text class="ekey" x="${cx}" y="${y+k*13}" text-anchor="middle">${esc(l)}</text>`).join('')}
+
+/* ---------------- CANDIDATE DETAIL ---------------- */
+function bars(v,names,w,col){return v.map((f,i)=>`<div class="f"><span>${names[i]}</span><div class="bar"><i style="width:${f[0]/w[i]*100}%;background:${col}"></i></div><b>${f[0]}/${w[i]}</b></div><div class="why">${f[1]}</div>`).join('')}
+function openC(id){if(!ran){alert('Run discovery first.');show('run');return}const c=cand(id);if(!c||(c.live&&!liveRan)){alert('Not detected yet.');return}
+ const C=sum(c.conf),R=sum(c.risk),d=dec(c),iss=ISS.find(i=>i.c===id);
+ document.getElementById('cdet').innerHTML=`
+ <div class="hd"><div><a onclick="show('cands')">← Candidates</a> · <a onclick="show('map')">Clue map</a><h1>${c.id} · ${c.name}</h1><div class="sub">Scenario ${c.sc} · ${c.sigs.length} clue(s) from ${chans(c).length} channel(s)</div></div>
+ <div>${iss?`<button class="btn" style="background:var(--r)" onclick="openI('${iss.id}')">Open issue ${iss.id} →</button>`:d!=='Raise issue'?`<button class="btn s" onclick="manual('${id}')">Raise issue manually</button>`:''}</div></div>
+ <div class="storybox"><b>Scenario story:</b> ${c.story}<br><span class="sub"><b>Planted on the AVD:</b> ${c.plant}</span></div>
+ <div class="card"><h3>① How the clues were linked</h3><div class="sub" style="margin-bottom:8px">${c.edges.length?'Each box is a clue (signal). Each blue link shows the join rule that connected two clues and the shared value.':'This clue had nothing to link with. No shared repo, key, user + website, or server.'}</div>
+ <div class="graphwrap">${graph(c)}</div>
+ ${c.edges.length?`<table style="margin-top:10px"><tr><th>Link</th><th>Rule</th><th>Shared value</th></tr>${c.edges.map(e=>`<tr><td>${e[0]} ↔ ${e[1]}</td><td><b>${e[2]}</b></td><td>${e[3]}</td></tr>`).join('')}</table>`:''}</div>
+ <div class="g c2"><div class="card"><h3>② Checked against approved inventory</h3><span class="t ${c.inv[0]}">${c.inv[1]}</span><p class="sub">${c.inv[2]}</p><dl class="kv"><dt>Suggested owner</dt><dd>${c.owner}</dd></dl></div>
+ <div class="card"><h3>⑤ Decision</h3><span class="dec t ${DT[d]}">${d}</span>${RULES.map((r,i)=>`<div class="rule ${i===c.rule?'fire':''}">${i===c.rule?'✔ ':''}${r}</div>`).join('')}<p style="margin-top:8px"><b>Recommended action:</b> ${c.act}</p></div></div>
+ <div class="g c2"><div class="card"><h3>③ Discovery confidence: ${C}/100</h3><div class="sub" style="margin-bottom:6px">How sure are we this is real AI usage?</div>${bars(c.conf,CF,CW,'#2f6fdb')}</div>
+ <div class="card"><h3>④ AI risk: ${R}/100</h3><div class="sub" style="margin-bottom:6px">How harmful could it be?</div>${bars(c.risk,RF,RW,'#c03838')}</div></div>
+ <div class="card"><h3>Evidence (metadata only)</h3><table><tr><th>Signal</th><th>Channel</th><th>Type</th><th>Detected</th><th>User / device</th><th>Source</th></tr>${c.sigs.map(s=>{const x=SIG[s];return `<tr><td>${s}</td><td><span class="t ch">${x[0]}</span></td><td class="sub">${x[1]}</td><td>${esc(x[2])}</td><td>${x[4]}</td><td class="sub">${x[6]}</td></tr>`}).join('')}</table>
+ <div class="sub" style="margin-top:6px">No prompts, file contents or key values are stored. Keys are shown only as fingerprints.</div></div>`;show('cdet')}
+function manual(id){const c=cand(id);c.title=c.title||('Manual review: '+c.name);ISS.push({id:'ISS-00'+(ISS.length+1),c:id,st:0});drawIssues();openI(ISS[ISS.length-1].id)}
+
+/* ---------------- ISSUE DETAIL ---------------- */
+function openI(id){const i=ISS.find(x=>x.id===id),c=cand(i.c);
+ document.getElementById('idet').innerHTML=`<div class="hd"><div><a onclick="show('issues')">← Issues</a><h1>${i.id} · ${c.title}</h1><div class="sub">From ${c.id} (${c.sc}) · ${RULES[c.rule]}</div></div>
+ <div>${i.st<2?`<button class="btn s" onclick="adv('${id}')">${i.st===0?'Start investigation':'Resolve'}</button>`:''}</div></div>
+ <div class="steps">${['Open','Investigating','Resolved'].map((s,n)=>`<span class="${n<=i.st?'on':''}">${s}</span>`).join('')}</div>
+ <div class="g c2"><div class="card"><h3>Why this was raised</h3><p>${c.story}</p><dl class="kv"><dt>Clues linked</dt><dd>${c.sigs.length} (${c.edges.map(e=>e[2]).join(', ')})</dd><dt>Channels</dt><dd>${chans(c).join(', ')}</dd><dt>Inventory</dt><dd>${c.inv[1]}</dd><dt>Confidence</dt><dd>${sum(c.conf)}/100</dd><dt>Risk</dt><dd>${sum(c.risk)}/100</dd><dt>Top risk drivers</dt><dd>${c.risk.map((f,k)=>[f,RF[k]]).filter(x=>x[0][0]>=15).map(x=>x[1]+' ('+x[0][0]+')').join(', ')}</dd></dl>
+ <p><a onclick="openC('${c.id}')">See linked clues and full scoring →</a></p></div>
+ <div class="card"><h3>Recommended action</h3><p>${c.act}</p><dl class="kv"><dt>Suggested owner</dt><dd>${c.owner}</dd><dt>Due</dt><dd>5 working days</dd></dl>
+ ${i.st===2?`<h3 style="margin-top:12px">Resolution</h3><select><option>Remediated</option><option>Approved &amp; registered</option><option>False positive</option></select>`:''}</div></div>
+ <div class="card"><h3>Evidence pack</h3><table><tr><th>Signal</th><th>Channel</th><th>Detected</th><th>Source</th></tr>${c.sigs.map(s=>{const x=SIG[s];return `<tr><td>${s}</td><td><span class="t ch">${x[0]}</span></td><td>${esc(x[2])}</td><td class="sub">${x[6]}</td></tr>`}).join('')}</table></div>`;show('idet')}
+function adv(id){const i=ISS.find(x=>x.id===id);i.st++;drawIssues();openI(id)}
+
+drawScen();drawCollectors('idle');drawPipe(-1);
+</script></body></html>
