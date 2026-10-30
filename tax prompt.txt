@@ -1,0 +1,1429 @@
+You are a senior AI architect, knowledge graph engineer, Python developer and banking credit-risk domain specialist.
+ 
+Build a working prototype called:
+ 
+CREDIT POLICY INTELLIGENCE
+Ontology-Driven Policy Rule Extraction and Knowledge Graph
+ 
+The purpose of the application is to demonstrate how an enterprise risk schema, risk-domain reference documents and credit-policy documents can be transformed into:
+ 
+1. A controlled Risk Taxonomy
+2. A Risk / Credit Policy Ontology
+3. A Policy Knowledge Graph
+4. A structured Policy Rule Library
+5. An explainable mechanism to determine which policy rules apply to a credit request
+ 
+This is a demonstration/prototype, not a production policy decision engine.
+ 
+===========================================================
+1. HIGH-LEVEL BUSINESS PROBLEM
+===========================================================
+ 
+Banks have large numbers of policy, standard, procedure and guideline documents.
+ 
+Credit officers need to determine:
+ 
+- Which policies apply to a credit proposal?
+- Which individual policy rules apply?
+- What conditions and thresholds are relevant?
+- What approvals are required?
+- Are there exceptions?
+- Are there conflicting or overlapping rules?
+- Why was a particular rule considered applicable?
+- Where exactly did the rule originate?
+ 
+The prototype should convert unstructured policy documents into a structured and traceable Policy Knowledge Graph and use that graph to identify potentially applicable rules.
+ 
+===========================================================
+2. INPUT ASSETS
+===========================================================
+ 
+The application must support three major input types.
+ 
+INPUT A - ENTERPRISE RISK SCHEMA
+ 
+A schema will be supplied representing enterprise risk concepts across areas such as:
+ 
+- Credit Risk
+- Market Risk
+- Liquidity Risk
+- Counterparty Risk
+- Operational Risk
+- Financial Risk
+- Non-Financial Risk
+- Climate Risk
+- other risk types present in the source asset
+ 
+IMPORTANT:
+ 
+Do NOT invent changes to the supplied schema.
+ 
+Treat the source schema as the authoritative seed model.
+ 
+Extract:
+- entities
+- fields
+- definitions
+- parent/child structures
+- data types
+- enumerations already present
+- relationships already explicitly present
+ 
+Where the schema contains an attribute but no controlled vocabulary, the LLM may PROPOSE values.
+ 
+Example:
+ 
+Source schema:
+ 
+CreditRisk
+    Rating
+ 
+Potential proposed controlled vocabulary:
+ 
+Rating
+    AAA
+    AA
+    A
+    BBB
+    BB
+    B
+    etc.
+ 
+However, these values must be labelled:
+ 
+AI_PROPOSED
+ 
+They must NOT automatically become APPROVED taxonomy values.
+ 
+Support statuses:
+ 
+SOURCE
+AI_PROPOSED
+REVIEWED
+APPROVED
+REJECTED
+ 
+===========================================================
+3. TAXONOMY BUILDER
+===========================================================
+ 
+Create a Taxonomy Builder module.
+ 
+The objective is to convert the supplied enterprise-risk schema into a navigable controlled vocabulary.
+ 
+Example conceptual structure:
+ 
+Enterprise Risk
+    |
+    +-- Credit Risk
+    |       |
+    |       +-- Borrower
+    |       +-- Facility
+    |       +-- Collateral
+    |       +-- Exposure
+    |       +-- Risk Rating
+    |       +-- Limit
+    |       +-- Approval
+    |
+    +-- Market Risk
+    +-- Liquidity Risk
+    +-- Counterparty Risk
+    +-- Operational Risk
+    +-- Climate Risk
+ 
+For every concept maintain at least:
+ 
+concept_id
+preferred_name
+description
+parent_concept
+synonyms
+source
+risk_domain
+data_type
+allowed_values
+status
+confidence
+review_notes
+ 
+Allow the user to review AI-proposed:
+- concepts
+- synonyms
+- aliases
+- controlled vocabulary values
+- hierarchies
+ 
+Example:
+ 
+Preferred Concept:
+Risk Rating
+ 
+Possible synonyms:
+Internal Rating
+Credit Rating
+Borrower Rating
+Risk Grade
+ 
+The system must distinguish SOURCE information from LLM-generated suggestions.
+ 
+===========================================================
+4. REFERENCE KNOWLEDGE INPUT
+===========================================================
+ 
+Allow risk reference documents to be uploaded.
+ 
+Examples may include trusted regulatory or risk-management reference material provided by the user.
+ 
+The documents may be used to help discover:
+ 
+- domain concepts
+- definitions
+- semantic relationships
+- risk terminology
+- potential ontology relationships
+ 
+Do not treat every sentence in a reference document as an ontology fact.
+ 
+Instead:
+ 
+Extract candidate concepts and relationships.
+ 
+Example:
+ 
+Borrower
+    HAS_RISK_RATING
+Rating
+ 
+Facility
+    HAS_EXPOSURE
+Exposure
+ 
+Facility
+    HAS_COLLATERAL
+Collateral
+ 
+Policy
+    GOVERNS
+Product
+ 
+Rule
+    APPLIES_TO
+Facility
+ 
+Rule
+    HAS_CONDITION
+Condition
+ 
+Rule
+    HAS_EXCEPTION
+Exception
+ 
+Approval
+    APPROVED_BY
+ApprovalAuthority
+ 
+All AI-discovered ontology relationships must retain:
+- source document
+- source passage
+- extraction confidence
+- review status
+ 
+===========================================================
+5. ONTOLOGY BUILDER
+===========================================================
+ 
+Build an Ontology Builder.
+ 
+Ontology represents relationships between taxonomy concepts.
+ 
+Represent relationships as:
+ 
+SUBJECT -> PREDICATE -> OBJECT
+ 
+Example:
+ 
+Borrower -> HAS_RISK_RATING -> RiskRating
+ 
+Borrower -> BELONGS_TO -> CustomerSegment
+ 
+CreditFacility -> HAS_PRODUCT -> Product
+ 
+CreditFacility -> HAS_EXPOSURE -> Exposure
+ 
+CreditFacility -> SECURED_BY -> Collateral
+ 
+PolicyRule -> APPLIES_TO -> CreditFacility
+ 
+PolicyRule -> HAS_CONDITION -> Condition
+ 
+PolicyRule -> HAS_EXCEPTION -> Exception
+ 
+PolicyRule -> REQUIRES -> Approval
+ 
+Approval -> APPROVED_BY -> ApprovalAuthority
+ 
+PolicyRule -> DERIVED_FROM -> PolicyClause
+ 
+PolicyRule -> SUPERSEDES -> PolicyRule
+ 
+PolicyRule -> OVERRIDES -> PolicyRule
+ 
+ 
+Provide UI functionality for:
+ 
+Ontology Explorer
+ 
+Show nodes and relationships visually.
+ 
+Allow filtering by:
+ 
+- Risk Domain
+- Entity Type
+- Relationship Type
+- Source
+- Approval Status
+ 
+===========================================================
+6. POLICY DOCUMENT INGESTION
+===========================================================
+ 
+Next ingest manufactured Credit Policy documents.
+ 
+Support initially:
+ 
+PDF
+DOCX
+TXT
+Markdown
+ 
+Preserve document provenance:
+ 
+document_id
+document_name
+document_type
+version
+effective_date if explicitly available
+section
+subsection
+page when available
+paragraph/clause
+raw_text
+ 
+Do NOT lose the original policy wording.
+ 
+Every extracted rule must be traceable back to the original clause.
+ 
+===========================================================
+7. POLICY CLAUSE CLASSIFICATION
+===========================================================
+ 
+Break policy documents into clauses/sections.
+ 
+Classify each clause into one or more categories:
+ 
+DEFINITION
+SCOPE
+ELIGIBILITY
+RULE
+THRESHOLD
+LIMIT
+REQUIREMENT
+APPROVAL
+PROHIBITION
+EXCEPTION
+OVERRIDE
+COLLATERAL_REQUIREMENT
+DOCUMENTATION_REQUIREMENT
+MONITORING_REQUIREMENT
+REPORTING_REQUIREMENT
+OTHER
+ 
+Show classification confidence.
+ 
+===========================================================
+8. POLICY RULE EXTRACTION
+===========================================================
+ 
+Use an LLM to identify candidate policy rules.
+ 
+Convert natural-language rules into structured rules.
+ 
+Example source text:
+ 
+"For unsecured business loans above INR 5 million,
+borrowers having an internal credit rating below BBB
+require approval from the Senior Credit Committee."
+ 
+Extract:
+ 
+Rule ID:
+CR-XXXX
+ 
+Scope:
+Customer Segment = applicable segment if explicitly specified
+Product = Unsecured Business Loan
+ 
+Conditions:
+ 
+Exposure
+operator >
+value 5000000
+currency INR
+ 
+AND
+ 
+Internal Credit Rating
+operator <
+value BBB
+ 
+Outcome:
+ 
+Action = Approval Required
+Authority = Senior Credit Committee
+ 
+Source:
+ 
+Document
+Section
+Page
+Clause
+Original text
+ 
+===========================================================
+9. RULE DATA MODEL
+===========================================================
+ 
+Create a structured Rule object similar to:
+ 
+{
+  "rule_id": "...",
+ 
+  "rule_name": "...",
+ 
+  "rule_type": "...",
+ 
+  "scope": [
+     ...
+  ],
+ 
+  "conditions": [
+    {
+      "attribute": "...",
+      "operator": "...",
+      "value": "...",
+      "unit": "...",
+      "taxonomy_mapping": "..."
+    }
+  ],
+ 
+  "logical_expression": "...",
+ 
+  "outcome": {
+      "action": "...",
+      "value": "...",
+      "authority": "..."
+  },
+ 
+  "exceptions": [],
+ 
+  "policy": {
+      "document_id": "...",
+      "document_name": "...",
+      "section": "...",
+      "page": "...",
+      "clause": "...",
+      "original_text": "..."
+  },
+ 
+  "ontology_links": [],
+ 
+  "confidence": 0.0,
+ 
+  "status": "CANDIDATE"
+}
+ 
+IMPORTANT:
+ 
+LLM-extracted rules are always:
+ 
+CANDIDATE
+ 
+until reviewed.
+ 
+Support statuses:
+ 
+CANDIDATE
+REVIEWED
+APPROVED
+REJECTED
+SUPERSEDED
+ 
+===========================================================
+10. RULE NORMALIZATION
+===========================================================
+ 
+After extracting a candidate rule, map its terminology to the approved taxonomy.
+ 
+Example policy language:
+ 
+"small business borrower"
+ 
+Taxonomy:
+ 
+SME
+ 
+Possible mapping:
+ 
+small business borrower
+      ->
+SME
+ 
+Store both:
+ 
+original_term
+normalized_term
+ 
+Never overwrite the original wording.
+ 
+===========================================================
+11. POLICY KNOWLEDGE GRAPH
+===========================================================
+ 
+Construct a graph containing nodes such as:
+ 
+Policy
+PolicyDocument
+PolicySection
+PolicyClause
+PolicyRule
+Condition
+Exception
+CustomerSegment
+Borrower
+CreditFacility
+Product
+Exposure
+RiskRating
+Collateral
+Geography
+Industry
+Approval
+ApprovalAuthority
+Limit
+ 
+Relationships may include:
+ 
+CONTAINS
+DERIVED_FROM
+APPLIES_TO
+HAS_CONDITION
+HAS_EXCEPTION
+REQUIRES
+APPROVED_BY
+HAS_RATING
+HAS_EXPOSURE
+HAS_PRODUCT
+SECURED_BY
+BELONGS_TO_SEGMENT
+OPERATES_IN
+HAS_INDUSTRY
+SUPERSEDES
+OVERRIDES
+CONFLICTS_WITH
+ 
+Do not generate relationships simply because two concepts occur in the same document.
+ 
+Every graph edge must have provenance.
+ 
+===========================================================
+12. GRAPH DATABASE
+===========================================================
+ 
+Prefer Neo4j if available.
+ 
+However, the application must be runnable locally without requiring an external Neo4j server.
+ 
+Therefore create a graph repository abstraction.
+ 
+Suggested implementations:
+ 
+Neo4jGraphRepository
+InMemoryGraphRepository
+ 
+The application must run using the in-memory implementation if Neo4j configuration is absent.
+ 
+Provide Cypher generation or equivalent graph query examples where useful.
+ 
+===========================================================
+13. GRAPH EXPLORER UI
+===========================================================
+ 
+Create an interactive visual graph.
+ 
+When the user selects Credit Risk, show related concepts.
+ 
+Example:
+ 
+Credit Risk
+     |
+     +-- Credit Facility
+              |
+              +-- Product
+              |
+              +-- Exposure
+              |
+              +-- Borrower
+              |       |
+              |       +-- Risk Rating
+              |
+              +-- Collateral
+              |
+              +-- Policy Rules
+ 
+Allow users to click a Policy Rule and see:
+ 
+Policy Rule
+    |
+    +-- Conditions
+    +-- Outcome
+    +-- Exception
+    +-- Approval Authority
+    +-- Applicable Product
+    +-- Applicable Customer Segment
+    +-- Source Clause
+ 
+Clicking Source Clause must show the source policy text.
+ 
+===========================================================
+14. CREDIT REQUEST / DEAL SIMULATOR
+===========================================================
+ 
+Create a screen called:
+ 
+"Credit Request"
+ 
+Allow a sample credit application to be entered.
+ 
+Fields should be driven wherever practical by available taxonomy/schema definitions.
+ 
+Example:
+ 
+Borrower:
+ABC Manufacturing Ltd
+ 
+Customer Segment:
+SME
+ 
+Industry:
+Manufacturing
+ 
+Product:
+Unsecured Business Loan
+ 
+Requested Amount:
+INR 6,000,000
+ 
+Internal Rating:
+BB
+ 
+Collateral:
+None
+ 
+Country:
+India
+ 
+Use this credit request to query the Policy Knowledge Graph.
+ 
+===========================================================
+15. APPLICABLE RULE DISCOVERY
+===========================================================
+ 
+This is one of the most important features.
+ 
+Given the credit request, determine which APPROVED rules could apply.
+ 
+Process conceptually:
+ 
+Credit Request
+        |
+        +-- Customer Segment
+        +-- Product
+        +-- Exposure
+        +-- Rating
+        +-- Collateral
+        +-- Geography
+        +-- Industry
+                |
+                V
+          Taxonomy Mapping
+                |
+                V
+       Knowledge Graph Traversal
+                |
+                V
+       Candidate Applicable Rules
+                |
+                V
+       Deterministic Condition Evaluation
+                |
+                V
+         Applicable Rules
+ 
+DO NOT ask the LLM to make the final deterministic comparison if the rule has already been structured.
+ 
+For example:
+ 
+Exposure = 6,000,000
+Rule threshold = 5,000,000
+ 
+Evaluate using application logic:
+ 
+6000000 > 5000000
+ 
+rather than asking the LLM whether the rule applies.
+ 
+===========================================================
+16. EXPLAINABILITY
+===========================================================
+ 
+For every applicable rule provide:
+ 
+RULE:
+CR-00421
+ 
+RESULT:
+Applicable
+ 
+WHY:
+ 
+Product:
+Unsecured Business Loan
+matches
+Unsecured Business Loan
+ 
+Exposure:
+INR 6.0M
+>
+INR 5.0M
+ 
+Rating:
+BB
+is below
+BBB
+ 
+THEREFORE:
+ 
+Senior Credit Committee approval is required.
+ 
+SOURCE:
+ 
+Policy document
+Section
+Page
+Clause
+ 
+Allow the user to click "View Source".
+ 
+Never provide only:
+ 
+"Rule applicable."
+ 
+The evidence chain must be visible.
+ 
+===========================================================
+17. RULE TRACE / GRAPH PATH
+===========================================================
+ 
+Provide a visual "Why this rule?" graph.
+ 
+Example:
+ 
+ABC Manufacturing
+       |
+       | REQUESTS
+       V
+Unsecured Business Loan
+       |
+       | HAS_EXPOSURE
+       V
+INR 6M
+       |
+       | MATCHES CONDITION
+       V
+CR-00421
+       |
+       | REQUIRES
+       V
+Senior Credit Committee
+ 
+Also display the textual explanation.
+ 
+===========================================================
+18. CONFLICT / OVERLAP DISCOVERY
+===========================================================
+ 
+Provide a prototype analysis for potentially:
+ 
+- duplicate rules
+- overlapping rules
+- conflicting thresholds
+- conflicting approval authorities
+- superseded rules
+ 
+Example:
+ 
+Rule CR-101:
+Exposure > INR 5M
+requires Senior Credit Committee
+ 
+Rule CR-225:
+Exposure > INR 4M
+requires Regional Credit Committee
+ 
+Flag:
+ 
+POTENTIAL POLICY CONFLICT
+ 
+Do NOT automatically decide which rule wins unless the graph contains sufficient approved precedence metadata.
+ 
+Instead expose the potential conflict for review.
+ 
+===========================================================
+19. HUMAN-IN-THE-LOOP WORKFLOW
+===========================================================
+ 
+Implement:
+ 
+Document
+    ->
+AI Candidate Extraction
+    ->
+Taxonomy Mapping
+    ->
+Ontology Mapping
+    ->
+Validation
+    ->
+Human Review
+    ->
+Approved Rule
+    ->
+Knowledge Graph
+    ->
+Policy Rule Library
+ 
+Provide a Rule Review screen.
+ 
+Reviewer should see:
+ 
+Original Policy Text
+ 
+AI Extracted Rule
+ 
+Conditions
+ 
+Outcome
+ 
+Exception
+ 
+Taxonomy mappings
+ 
+Ontology relationships
+ 
+Confidence
+ 
+Source Reference
+ 
+Buttons:
+ 
+Approve
+Reject
+Edit
+ 
+Only APPROVED policy rules should be used for formal rule applicability evaluation by default.
+ 
+===========================================================
+20. MAIN APPLICATION SCREENS
+===========================================================
+ 
+Create a polished demonstration UI with approximately these modules:
+ 
+1. Dashboard
+ 
+Show:
+- source documents
+- taxonomy concepts
+- ontology relationships
+- candidate rules
+- approved rules
+- flagged conflicts
+ 
+Do not fabricate dashboard counts.
+Calculate them from loaded prototype data.
+ 
+2. Source Assets
+ 
+Tabs:
+ 
+Enterprise Risk Schema
+Reference Knowledge
+Policy Documents
+ 
+3. Taxonomy Studio
+ 
+Hierarchical tree.
+ 
+4. Ontology Studio
+ 
+Interactive relationship graph.
+ 
+5. Policy Processing
+ 
+Document -> Clauses -> Candidate Rules.
+ 
+6. Rule Review
+ 
+Original clause on left.
+ 
+Structured rule on right.
+ 
+Mappings and provenance shown clearly.
+ 
+7. Policy Knowledge Graph
+ 
+Interactive visualization.
+ 
+8. Policy Rule Library
+ 
+Columns:
+ 
+Rule ID
+Rule
+Risk Domain
+Product
+Conditions
+Outcome
+Exception
+Source
+Status
+Confidence
+ 
+9. Credit Request
+ 
+Input a sample deal.
+ 
+10. Applicable Rules
+ 
+Show:
+ 
+Applicable
+Not Applicable
+Insufficient Data
+Potential Conflict
+ 
+11. Why This Rule?
+ 
+Provide graph path and textual evidence.
+ 
+===========================================================
+21. LLM ABSTRACTION
+===========================================================
+ 
+Implement an LLM provider abstraction.
+ 
+For example:
+ 
+LLMProvider
+   |
+   +-- MockLLMProvider
+   +-- Configurable external provider
+ 
+The system must run without an external API key using MockLLMProvider and deterministic manufactured demonstration data.
+ 
+Do NOT hard-code API keys.
+ 
+Read credentials from environment variables.
+ 
+===========================================================
+22. LLM TASKS
+===========================================================
+ 
+Create separate prompts/tasks for:
+ 
+A. Taxonomy enrichment
+ 
+Input:
+schema concepts
+ 
+Output:
+candidate synonyms
+candidate enumerated values
+candidate hierarchy enrichment
+ 
+B. Ontology discovery
+ 
+Input:
+approved taxonomy + trusted reference passage
+ 
+Output:
+candidate SUBJECT-PREDICATE-OBJECT relationships
+ 
+C. Policy clause classification
+ 
+D. Candidate rule extraction
+ 
+E. Taxonomy mapping
+ 
+F. Potential rule conflict explanation
+ 
+Use strict structured JSON outputs.
+ 
+Validate LLM responses before storing them.
+ 
+===========================================================
+23. CONFIDENCE MODEL
+===========================================================
+ 
+Do not invent fake AI confidence percentages.
+ 
+Where the selected model/provider exposes a meaningful confidence mechanism, capture it.
+ 
+Otherwise implement explainable quality indicators based on validation checks, for example:
+ 
+- Source provenance available
+- Taxonomy concept resolved
+- Operator recognized
+- Threshold parsed
+- Outcome resolved
+- Approval authority resolved
+- Exception successfully parsed
+ 
+Present this as:
+ 
+Extraction Quality / Validation Status
+ 
+rather than pretending it is model probability.
+ 
+===========================================================
+24. DATA STORAGE
+===========================================================
+ 
+Keep storage modular.
+ 
+Suggested entities:
+ 
+documents
+document_sections
+clauses
+ 
+taxonomy_concepts
+taxonomy_values
+taxonomy_synonyms
+ 
+ontology_entities
+ontology_relationships
+ 
+policy_rules
+rule_conditions
+rule_exceptions
+ 
+graph_nodes
+graph_edges
+ 
+credit_requests
+rule_evaluation_results
+ 
+Use SQLite/PostgreSQL-compatible patterns for prototype structured storage.
+ 
+===========================================================
+25. IMPORTANT DESIGN PRINCIPLE
+===========================================================
+ 
+Separate these layers clearly.
+ 
+SOURCE KNOWLEDGE
+        |
+        V
+TAXONOMY
+"What are the standardized concepts?"
+        |
+        V
+ONTOLOGY
+"How are these concepts related?"
+        |
+        V
+POLICY KNOWLEDGE GRAPH
+"What entities, clauses and rules are connected?"
+        |
+        V
+RULE LIBRARY
+"What executable policy rules exist?"
+        |
+        V
+RULE EVALUATION
+"Which rules apply to this credit request?"
+ 
+Do not combine all these concepts into a single LLM prompt.
+ 
+===========================================================
+26. PROVENANCE IS MANDATORY
+===========================================================
+ 
+Every AI-created object must retain its origin.
+ 
+Example:
+ 
+Rule CR-00421
+ 
+Derived from:
+Credit_Policy_Demo.pdf
+Section 6.4.2
+Page 27
+Clause 3
+ 
+Every taxonomy enrichment should show:
+ 
+SOURCE_SCHEMA
+or
+AI_PROPOSED
+ 
+Every ontology relationship should show:
+ 
+SOURCE
+DISCOVERED_FROM_REFERENCE_DOCUMENT
+AI_PROPOSED
+APPROVED
+ 
+Never discard provenance.
+ 
+===========================================================
+27. GUARDRAIL AGAINST HALLUCINATION
+===========================================================
+ 
+The LLM must never silently create policy requirements.
+ 
+If a value cannot be extracted:
+ 
+return:
+ 
+UNKNOWN
+ 
+If a relationship is inferred:
+ 
+mark:
+ 
+AI_PROPOSED
+ 
+If a rule is ambiguous:
+ 
+mark:
+ 
+REQUIRES_REVIEW
+ 
+If required input for a rule evaluation is missing:
+ 
+return:
+ 
+INSUFFICIENT_DATA
+ 
+Do not assume compliance or non-compliance.
+ 
+===========================================================
+28. SYNTHETIC DEMONSTRATION DATA
+===========================================================
+ 
+If the supplied project directory does not yet contain real input assets, create clearly labelled SYNTHETIC demonstration data.
+ 
+Create at least enough example material to demonstrate:
+ 
+- taxonomy generation
+- ontology relationships
+- policy extraction
+- thresholds
+- approval requirements
+- an exception
+- rule overlap/conflict
+- graph traversal
+- applicable rule evaluation
+ 
+All manufactured content must be visibly labelled:
+ 
+SYNTHETIC DEMO DATA - NOT AN ACTUAL BANK POLICY
+ 
+Never present synthetic data as regulatory or bank policy.
+ 
+===========================================================
+29. ARCHITECTURE
+===========================================================
+ 
+Use a clean modular architecture.
+ 
+Suggested logical components:
+ 
+Document Processor
+ 
+        |
+        V
+ 
+Schema Parser
+Taxonomy Service
+Ontology Service
+ 
+        |
+        V
+ 
+LLM Extraction Service
+ 
+        |
+        V
+ 
+Policy Rule Parser / Validator
+ 
+        |
+        V
+ 
+Structured Repository
++
+Graph Repository
+ 
+        |
+        V
+ 
+Rule Applicability Engine
+ 
+        |
+        V
+ 
+API Layer
+ 
+        |
+        V
+ 
+Web UI
+ 
+Where practical, use:
+ 
+Python
+FastAPI
+Pydantic
+React
+a suitable graph visualization library
+SQLite for local prototype persistence
+Neo4j adapter as optional graph backend
+ 
+Do not introduce unnecessary infrastructure.
+ 
+===========================================================
+30. DIRECTORY STRUCTURE
+===========================================================
+ 
+Create a clean structure similar to:
+ 
+credit-policy-intelligence/
+ 
+backend/
+    api/
+    domain/
+    models/
+    services/
+    taxonomy/
+    ontology/
+    policy_extraction/
+    graph/
+    rules/
+    evaluation/
+    llm/
+    repositories/
+ 
+frontend/
+    src/
+       components/
+       pages/
+       graph/
+       services/
+ 
+data/
+    schema/
+    reference/
+    policies/
+    synthetic/
+ 
+tests/
+ 
+docs/
+ 
+.env.example
+ 
+README.md
+ 
+===========================================================
+31. TESTING
+===========================================================
+ 
+Provide tests especially for deterministic policy evaluation.
+ 
+Test:
+ 
+numeric thresholds
+rating ordering
+AND conditions
+OR conditions
+exceptions
+missing attributes
+taxonomy normalization
+approved vs candidate rules
+ 
+Example:
+ 
+Credit amount = INR 6M
+ 
+Policy condition:
+Exposure > INR 5M
+ 
+Expected:
+TRUE
+ 
+Test rating semantics explicitly.
+ 
+Do not compare ratings alphabetically.
+ 
+Use an approved rating scale / ordering represented by taxonomy data.
+ 
+===========================================================
+32. DEMONSTRATION FLOW
+===========================================================
+ 
+Build the prototype so that a business demonstration can follow this story:
+ 
+STEP 1
+Upload Enterprise Risk Schema
+ 
+STEP 2
+System builds initial taxonomy
+ 
+STEP 3
+AI proposes vocabulary enrichment
+ 
+STEP 4
+Reviewer approves selected taxonomy concepts
+ 
+STEP 5
+Upload trusted risk reference material
+ 
+STEP 6
+AI proposes ontology relationships
+ 
+STEP 7
+Reviewer approves ontology
+ 
+STEP 8
+Upload Credit Policy
+ 
+STEP 9
+System identifies policy clauses
+ 
+STEP 10
+AI extracts candidate policy rules
+ 
+STEP 11
+Reviewer approves rule
+ 
+STEP 12
+System updates Policy Knowledge Graph
+ 
+STEP 13
+Enter sample credit request
+ 
+STEP 14
+System traverses taxonomy/graph to retrieve potentially applicable approved rules
+ 
+STEP 15
+Rule engine evaluates conditions
+ 
+STEP 16
+Display applicable rules
+ 
+STEP 17
+Click "Why This Rule?"
+ 
+STEP 18
+Show the graph path, condition evaluation and original policy clause.
+ 
+===========================================================
+33. README
+===========================================================
+ 
+Create a detailed README explaining:
+ 
+- business problem
+- architecture
+- taxonomy vs ontology vs graph vs rule engine
+- installation
+- environment configuration
+- how to run locally
+- how to provide the enterprise-risk schema
+- how to provide reference documents
+- how to provide policy documents
+- how LLM integration works
+- how MockLLMProvider works
+- data provenance
+- limitations
+- human review process
+ 
+===========================================================
+34. MOST IMPORTANT USER EXPERIENCE
+===========================================================
+ 
+The prototype must visually communicate:
+ 
+"We are not simply asking an LLM questions about a PDF."
+ 
+The UI should clearly demonstrate the transformation:
+ 
+Enterprise Risk Schema
+        ↓
+Risk Taxonomy
+        ↓
+Risk Ontology
+        ↓
+Policy Documents
+        ↓
+Policy Rule Extraction
+        ↓
+Policy Knowledge Graph
+        ↓
+Policy Rule Library
+        ↓
+Credit Request
+        ↓
+Applicable Rules
+        ↓
+Explainable Policy Decision
+ 
+A non-technical stakeholder should be able to understand this flow through the interface.
+ 
+===========================================================
+35. START IMPLEMENTATION
+===========================================================
+ 
+First inspect the existing project/repository and reuse useful components where possible.
+ 
+Then:
+ 
+1. create the domain models
+2. create synthetic demonstration inputs if real assets are absent
+3. implement taxonomy service
+4. implement ontology service
+5. implement policy clause/rule extraction service
+6. implement graph repository
+7. implement deterministic rule evaluation
+8. build REST APIs
+9. build UI
+10. add graph visualization
+11. add synthetic demonstration journey
+12. add tests
+13. document everything
+ 
+Do not stop after producing an architecture document.
+ 
+Build the runnable prototype.
